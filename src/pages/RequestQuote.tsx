@@ -13,7 +13,7 @@ import { Link } from "wouter";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: easeOut } },
 };
 
 const step1Schema = z.object({
@@ -60,7 +60,7 @@ function ProgressBar({ current }: { current: number }) {
         <motion.div
           className="h-full bg-primary rounded-full"
           animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          transition={{ duration: 0.4, ease: easeOut }}
         />
       </div>
     </div>

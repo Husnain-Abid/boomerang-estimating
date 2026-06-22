@@ -14,7 +14,7 @@ import { SERVICES, PORTFOLIO, TESTIMONIALS, FAQS, COMPANY_INFO } from "@/lib/dat
 /* ── Animations ─────────────────────────────────────────── */
 const fadeUp = {
   hidden: { opacity: 0, y: 32 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: easeOut } },
 };
 const stagger = (delay = 0.1) => ({
   hidden: {},
@@ -69,7 +69,7 @@ function DashboardMockup() {
       className="relative w-full max-w-lg mx-auto"
       initial={{ opacity: 0, x: 40 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.9, delay: 0.3, ease: easeOut }}
     >
       {/* Floating glow */}
       <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-75 translate-y-8" />
@@ -116,7 +116,7 @@ function DashboardMockup() {
                   className={`h-full rounded-full ${bar.color}`}
                   initial={{ width: 0 }}
                   animate={{ width: `${bar.pct}%` }}
-                  transition={{ duration: 1.5, delay: 0.8, ease: "easeOut" }}
+                  transition={{ duration: 1.5, delay: 0.8, ease: easeOut }}
                 />
               </div>
             </div>

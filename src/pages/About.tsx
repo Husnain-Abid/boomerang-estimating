@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { easeOut, motion } from "framer-motion";
 import { Link } from "wouter";
 import { ArrowRight, CheckCircle2, Target, TrendingUp, Users, Award, Shield, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
