@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { easeOut, motion, useInView, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import {
   ArrowRight, CheckCircle2, Clock, Home as HomeIcon, Building2, Ruler,
   Star, ChevronLeft, ChevronRight, FileSpreadsheet, FileText, PenTool,
-  BarChart3, Users, Layers, Shield, Zap, HardHat, Factory, ShoppingBag,
+  BarChart3, Users, Layers, Shield, Zap, Factory, ShoppingBag,
   Heart, Landmark, Truck, GraduationCap, Quote, Phone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";

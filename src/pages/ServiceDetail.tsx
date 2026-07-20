@@ -1,6 +1,6 @@
 import { easeOut, motion } from "framer-motion";
 import { Link, useParams } from "wouter";
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock, HandCoins, Home as HomeIcon, Building2, Ruler, ChevronRight, Star, FileText, Quote } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock, HandCoins, Home as HomeIcon, Building2, Ruler, ChevronRight, Star, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
