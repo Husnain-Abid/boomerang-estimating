@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { easeOut, motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import { ArrowRight, MapPin, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
