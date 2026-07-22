@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { cubicBezier, motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import { ArrowRight, MapPin, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PORTFOLIO } from "@/lib/data";
+
+const easeOut = cubicBezier(0.22, 1, 0.36, 1);
 
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },

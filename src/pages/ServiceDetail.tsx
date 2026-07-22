@@ -1,10 +1,12 @@
-import { easeOut, motion } from "framer-motion";
+import { cubicBezier, motion } from "framer-motion";
 import { Link, useParams } from "wouter";
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock, HandCoins, Home as HomeIcon, Building2, Ruler, ChevronRight, Star, FileText, Quote } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock, HandCoins, Home as HomeIcon, Building2, Ruler, ChevronRight, Star, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { SERVICES, TESTIMONIALS } from "@/lib/data";
+
+const easeOut = cubicBezier(0.22, 1, 0.36, 1);
 
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },

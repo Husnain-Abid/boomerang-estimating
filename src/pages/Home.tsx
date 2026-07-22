@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { cubicBezier, motion, AnimatePresence, useInView } from "framer-motion";
 import { Link } from "wouter";
 import {
   ArrowRight, CheckCircle2, Clock, Home as HomeIcon, Building2, Ruler,
   Star, ChevronLeft, ChevronRight, FileSpreadsheet, FileText, PenTool,
-  BarChart3, Users, Layers, Shield, Zap, HardHat, Factory, ShoppingBag,
+  BarChart3, Users, Layers, Shield, Zap, Factory, ShoppingBag,
   Heart, Landmark, Truck, GraduationCap, Quote, Phone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { SERVICES, PORTFOLIO, TESTIMONIALS, FAQS, COMPANY_INFO } from "@/lib/data";
 
 /* ── Animations ─────────────────────────────────────────── */
+const easeOut = cubicBezier(0.22, 1, 0.36, 1);
+
 const fadeUp = {
   hidden: { opacity: 0, y: 32 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: easeOut } },

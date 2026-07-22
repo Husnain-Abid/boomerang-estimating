@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Target, MapPin, Phone, Mail, Clock, ArrowRight } from "lucide-react";
+import { Target, MapPin, Phone, Mail, ArrowRight } from "lucide-react";
 import { COMPANY_INFO, SERVICES } from "@/lib/data";
 
 export function Footer() {
