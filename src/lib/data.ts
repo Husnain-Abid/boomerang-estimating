@@ -7,7 +7,7 @@ export const COMPANY_INFO = {
   hours: "Monday-Friday, 9:00 AM – 6:00 PM PKT",
   whatsapp: "https://wa.me/1234567890",
   socials: {
-    linkedin: "#",
+    linkedin: "https://www.linkedin.com/company/boomerang-estimating",
     facebook: "#",
     instagram: "#"
   }
