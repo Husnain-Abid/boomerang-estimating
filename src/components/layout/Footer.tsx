@@ -1,6 +1,8 @@
 import { Link } from "wouter";
 import { Target, MapPin, Phone, Mail, ArrowRight } from "lucide-react";
 import { COMPANY_INFO, SERVICES } from "@/lib/data";
+import logo from "../../../public/LOGO/ICON.png";
+
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -16,9 +18,20 @@ export function Footer() {
           
           <div className="lg:col-span-4">
             <Link href="/" className="flex items-center gap-2 mb-6 group inline-flex">
-              <div className="bg-primary text-primary-foreground p-2 rounded-full shadow-lg group-hover:scale-105 transition-transform">
+       
+              {/* <div className="bg-primary text-primary-foreground p-2 rounded-full shadow-lg group-hover:scale-105 transition-transform">
                 <Target size={22} className="text-white" />
-              </div>
+              </div> */}
+       
+         <div className="group-hover:scale-105 transition-transform">
+    <img
+      src={logo}
+      alt="Boomerang Estimating Logo"
+      className="w-10 h-10 object-contain"
+    />
+  </div>
+
+
               <span className="text-2xl font-bold tracking-tight text-white">
                 Boomerang <span className="font-light">Estimating</span>
               </span>

@@ -10,6 +10,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import logo from "../../../public/LOGO/ICON.png";
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -49,9 +51,21 @@ export function Navbar() {
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="bg-primary text-primary-foreground p-2 rounded-full shadow-lg group-hover:scale-105 transition-transform">
+            
+            {/* <div className="bg-primary text-primary-foreground p-2 rounded-full shadow-lg group-hover:scale-105 transition-transform">
               <Target size={22} className="text-white" />
-            </div>
+            </div> */}
+
+  <div className="group-hover:scale-105 transition-transform">
+    <img
+      src={logo}
+      alt="Boomerang Estimating Logo"
+      className="w-10 h-10 object-contain"
+    />
+  </div>
+
+
+
             <span
               className={`text-2xl font-bold tracking-tight ${
                 isDarkHero ? "text-white" : "text-foreground"
