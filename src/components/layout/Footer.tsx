@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Target, MapPin, Phone, Mail, ArrowRight } from "lucide-react";
+import {  MapPin, Phone, Mail, ArrowRight } from "lucide-react";
 import { COMPANY_INFO, SERVICES } from "@/lib/data";
 import logo from "../../../public/LOGO/ICON.png";
 
