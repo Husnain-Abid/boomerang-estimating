@@ -1,53 +1,196 @@
 export const COMPANY_INFO = {
   name: "Boomerang Estimating",
   tagline: "Estimates That Always Hit the Mark",
-  phone: "1300 ESTIMATE",
-  email: "info@boomerangestimating.com.au",
-  address: "Sydney, NSW, Australia",
-  hours: "Monday-Friday, 9:00 AM – 6:00 PM PKT",
-  whatsapp: "https://wa.me/1234567890",
+
+  phone: "+92 321 3630471",
+  email: "info@boomerangestimating.com",
+  address: "Islamabad, Pakistan",
+
+  hours: "Monday - Friday, 9:00 AM – 6:00 PM",
+
+  whatsapp: "https://wa.me/923213630471",
+
   socials: {
     linkedin: "https://www.linkedin.com/company/boomerang-estimating",
-    facebook: "#",
-    instagram: "#"
+    instagram: "https://www.instagram.com/boomerangestimating",
+    facebook: "#"
   }
 };
 
+
+
 export const SERVICES = [
   {
-    id: "residential-takeoffs",
-    title: "Residential Takeoffs",
-    slug: "residential-takeoffs",
-    shortDescription: "Accurate quantity takeoffs for custom homes, renovations, and multi-unit developments.",
-    description: "We provide comprehensive residential estimating services tailored to Australian builders. From single custom homes to large-scale residential developments, our detailed takeoffs ensure you have an accurate understanding of all material and labor costs.",
-    price: "from AUD $150",
+    id: "residential-estimating",
+    title: "Residential Estimating",
+    slug: "residential-estimating",
+    shortDescription:
+      "Accurate cost estimates for custom homes, renovations, and multi-unit residential developments.",
+    description:
+      "Our Residential Estimating services provide accurate cost estimates for custom homes, townhouses, duplexes, apartments, renovations, and multi-unit residential developments. We prepare detailed material quantities and project costs that help builders and developers establish realistic budgets. Every estimate is tailored to your project and aligned with Australian construction standards.",
+    price: "Contact for Quote",
     turnaround: "24-48h",
-    deliverables: ["Detailed Material List", "Labor Cost Estimation", "Markup Adjustments", "PDF & Excel Formats"],
-    icon: "Home"
+    deliverables: [
+      "Material Quantity Takeoffs",
+      "Labour Cost Estimates",
+      "Project Cost Breakdown",
+      "PDF & Excel Reports",
+    ],
+    icon: "Home",
   },
   {
     id: "commercial-estimating",
     title: "Commercial Estimating",
     slug: "commercial-estimating",
-    shortDescription: "Detailed cost estimation for retail, office, warehouse, and industrial projects.",
-    description: "Our commercial estimating services are built for the fast-paced Australian commercial sector. We deliver precise, structured estimates that help you submit competitive tenders and win more commercial projects without sacrificing margin.",
-    price: "from AUD $400",
+    shortDescription:
+      "Comprehensive estimating for offices, retail centres, hotels, and commercial developments.",
+    description:
+      "Our Commercial Estimating services support office buildings, retail centres, shopping complexes, hotels, restaurants, mixed-use developments, and commercial fit-outs. We deliver comprehensive cost estimates, trade pricing, and quantity takeoffs that help contractors and developers improve project planning, control costs, and prepare competitive tender submissions with confidence.",
+    price: "Contact for Quote",
     turnaround: "48-72h",
-    deliverables: ["Full Trade Breakdown", "BOQ Preparation", "Risk Assessment", "Value Engineering Options"],
-    icon: "Building2"
+    deliverables: [
+      "Trade Pricing",
+      "Quantity Takeoffs",
+      "Tender Estimates",
+      "Cost Planning Reports",
+    ],
+    icon: "Building2",
   },
   {
-    id: "civil-structural-estimation",
-    title: "Civil & Structural",
-    slug: "civil-structural-estimation",
-    shortDescription: "Specialized estimation for earthworks, concrete, steel, and infrastructure.",
-    description: "Handling complex civil and structural projects requires deep expertise. Our specialized team delivers highly accurate structural and civil estimates compliant with Australian standards, covering everything from bulk earthworks to detailed steel fabrication.",
-    price: "from AUD $600",
-    turnaround: "72-96h",
-    deliverables: ["Earthworks Quantification", "Steel Tonnage Reports", "Concrete Volume Analysis", "Plant & Equipment Costs"],
-    icon: "Ruler"
-  }
+    id: "industrial-estimating",
+    title: "Industrial Estimating",
+    slug: "industrial-estimating",
+    shortDescription:
+      "Professional estimates for warehouses, factories, and industrial facilities.",
+    description:
+      "We provide professional Industrial Estimating services for warehouses, manufacturing plants, distribution centres, processing facilities, factories, and industrial infrastructure projects. Our detailed estimates cover materials, labour, equipment, and specialist trade costs, enabling clients to manage complex industrial projects with greater accuracy, efficiency, and financial certainty.",
+    price: "Contact for Quote",
+    turnaround: "48-72h",
+    deliverables: [
+      "Material Estimates",
+      "Labour Costs",
+      "Equipment Costs",
+      "Trade Cost Analysis",
+    ],
+    icon: "Factory",
+  },
+  {
+    id: "partition-ceiling-estimates",
+    title: "Partition & Ceiling Estimates",
+    slug: "partition-ceiling-estimates",
+    shortDescription:
+      "Accurate takeoffs for drywall partitions, ceilings, framing, and insulation.",
+    description:
+      "Our Partition & Ceiling Estimates provide accurate material takeoffs and cost estimates for drywall partitions, suspended ceilings, board systems, acoustic ceilings, metal framing, insulation, and finishing works, helping contractors accurately estimate materials and labour while supporting efficient procurement and project planning.",
+    price: "Contact for Quote",
+    turnaround: "24-48h",
+    deliverables: [
+      "Drywall Takeoffs",
+      "Ceiling Quantities",
+      "Metal Framing",
+      "Labour Estimates",
+    ],
+    icon: "LayoutPanelTop",
+  },
+  {
+    id: "painting-estimates",
+    title: "Painting Estimates",
+    slug: "painting-estimates",
+    shortDescription:
+      "Precise estimates for interior and exterior painting projects.",
+    description:
+      "Our Painting Estimates provide precise calculations for interior and exterior painting projects across residential, commercial, and industrial developments. We estimate paint quantities, preparation work, coatings, labour, and finishing requirements, helping contractors prepare competitive bids and maintain accurate project budgets.",
+    price: "Contact for Quote",
+    turnaround: "24-48h",
+    deliverables: [
+      "Paint Quantities",
+      "Surface Preparation",
+      "Labour Costs",
+      "Coating Estimates",
+    ],
+    icon: "Paintbrush",
+  },
+  {
+    id: "render-cladding-estimates",
+    title: "Render & Cladding Estimates",
+    slug: "render-cladding-estimates",
+    shortDescription:
+      "Detailed estimates for render systems and architectural façade cladding.",
+    description:
+      "Our Render & Cladding Estimates cover all types of exterior façade systems, including cement render, acrylic render, aluminium composite panels, fibre cement cladding, metal cladding, and architectural façade finishes. We prepare accurate material takeoffs and labour estimates to support efficient procurement and project delivery.",
+    price: "Contact for Quote",
+    turnaround: "24-48h",
+    deliverables: [
+      "Facade Takeoffs",
+      "Material Quantities",
+      "Labour Estimates",
+      "Procurement Reports",
+    ],
+    icon: "PanelsTopLeft",
+  },
+  {
+    id: "masonry-estimates",
+    title: "Masonry Estimates",
+    slug: "masonry-estimates",
+    shortDescription:
+      "Accurate brickwork, blockwork, stone masonry, and retaining wall estimates.",
+    description:
+      "We provide accurate Masonry Estimates for brickwork, blockwork, stone masonry, retaining walls, and structural masonry systems. Our estimates include detailed quantities, mortar requirements, reinforcement, accessories, and labour costs, enabling contractors to manage masonry projects with confidence while reducing material waste and improving cost control.",
+    price: "Contact for Quote",
+    turnaround: "24-48h",
+    deliverables: [
+      "Brick & Block Quantities",
+      "Mortar Estimates",
+      "Reinforcement Details",
+      "Labour Costs",
+    ],
+    icon: "BrickWall",
+  },
+  {
+    id: "carpentry-estimates",
+    title: "Carpentry Estimates",
+    slug: "carpentry-estimates",
+    shortDescription:
+      "Material and labour estimates for framing and finish carpentry.",
+    description:
+      "Our Carpentry Estimates provide accurate material quantities and labour costs for structural framing, finish carpentry, timber framing, architraves, and custom woodwork. We help builders and carpentry contractors prepare competitive bids, minimise material waste, and improve project planning with reliable trade-specific estimating solutions for residential, commercial, and industrial projects.",
+    price: "Contact for Quote",
+    turnaround: "24-48h",
+    deliverables: [
+      "Timber Takeoffs",
+      "Framing Estimates",
+      "Finish Carpentry",
+      "Labour Costing",
+    ],
+    icon: "Hammer",
+  },
+  {
+    id: "structural-steel-estimates",
+    title: "Structural Steel Estimates",
+    slug: "structural-steel-estimates",
+    shortDescription:
+      "Detailed quantity takeoffs and cost estimates for structural steel projects.",
+    description:
+      "Our Structural Steel Estimates include detailed quantity takeoffs and cost estimates for structural steel frames, beams, columns, trusses, and installation. Using construction drawings and engineering specifications, we prepare accurate estimates that support procurement, budgeting, and tender submissions for commercial, industrial, and infrastructure projects across Australia.",
+    price: "Contact for Quote",
+    turnaround: "48-72h",
+    deliverables: [
+      "Steel Quantity Takeoffs",
+      "Fabrication Costs",
+      "Installation Estimates",
+      "Tender Reports",
+    ],
+    icon: "Construction",
+  },
 ];
+
+
+
+
+
+
+
+
 
 export const PORTFOLIO = [
   {
@@ -159,35 +302,48 @@ export const TESTIMONIALS = [
 
 export const FAQS = [
   {
-    question: "How long does an estimate take?",
-    answer: "Our standard turnaround times depend on the project type: 24-48 hours for Residential, 48-72 hours for Commercial, and 72-96 hours for Civil & Structural projects. We'll always confirm the exact timeframe when you submit your plans."
+    question: "What exactly is a construction takeoff, and how is it different from a quote?",
+    answer:
+      "A takeoff is the measurement of all building materials directly from the project plans. It can cover the entire project or just a single trade, depending on your requirements."
   },
   {
-    question: "What file formats do you accept?",
-    answer: "We prefer plans in PDF or DWG format. We also accept ZIP files for large plan sets, as well as XLSX, JPG, and PNG formats for supporting documentation."
+    question: "Do you have sample projects I can look at?",
+    answer:
+      "Yes. We can provide sample takeoffs and estimates upon request so you can review the quality and level of detail in our work."
   },
   {
-    question: "Do you work to Australian standards?",
-    answer: "Yes, absolutely. Our estimating team is highly experienced in the Australian construction industry and strictly adheres to local building codes, terminology, and standard measurement methods."
+    question: "What's the cost for a typical estimate?",
+    answer:
+      "Every project is unique, so the best way to get an accurate quote is to send your plans to info@boomerangestimating.com. As a general guide: Single trade jobs: $100–$200, Full house/full trade projects: $350–$600, Commercial projects: $500–$1,500. Final pricing depends on project size, scope, and complexity. You'll always receive a clear quote before we begin."
   },
   {
-    question: "How do you deliver estimates?",
-    answer: "We provide comprehensive reporting. You'll receive a detailed PDF report summarizing the estimate, along with fully unlocked Excel files (like a BOQ or Trade Breakdown) so you can adjust margins or rates as needed."
+    question: "Do you charge hourly, per project, or both?",
+    answer:
+      "Our pricing is primarily based on a per-project basis, but we also offer hourly estimating services. This gives contractors the flexibility to access professional estimates on demand without the cost of hiring a full-time in-house estimator."
   },
   {
-    question: "What are your payment terms?",
-    answer: "For new clients, we typically request a 50% upfront deposit before commencing work, with the remainder due upon delivery. For ongoing clients, we offer flexible invoicing terms."
+    question: "How long does it take to receive my estimate?",
+    answer:
+      "Most estimates are delivered within 3–4 business days. Larger or more complex projects may take 5–8 business days. If you have an urgent deadline, let us know and we'll do our best to accommodate your schedule. An expedite fee may apply for guaranteed rush delivery."
   },
   {
-    question: "Can you handle urgent projects?",
-    answer: "Yes. If you have an urgent tender deadline, please let us know immediately. We can often accommodate rush jobs for a small priority fee."
+    question: "What tools/software do you use to prepare estimates?",
+    answer:
+      "We use industry-leading software including PlanSwift, Bluebeam, CostX, Buildxact, and Cubit for digital takeoffs. Our pricing is prepared using Estimator Platinum by Cordell (Australia), with labor and material costs updated regularly and tailored to your project's location for accurate, competitive estimates."
   },
   {
-    question: "What types of projects do you estimate?",
-    answer: "We cover the full spectrum: single custom homes, multi-unit developments, retail fit-outs, office buildings, warehouses, earthworks, infrastructure, and heavy structural projects."
+    question: "What's the best way to send you my drawings or documents?",
+    answer:
+      "You can email your plans, drawings, or Invitation to Bid (ITB) documents along with the trades you would like us to estimate to info@boomerangestimating.com."
   },
   {
-    question: "Do you offer revisions?",
-    answer: "Yes. We include minor revisions (such as adjusting a specific rate or accommodating a small plan addendum) free of charge within 7 days of delivering the estimate. Major architectural changes will be quoted as a variation."
+    question: "What kinds of estimates or takeoffs do you provide?",
+    answer:
+      "We provide estimating and takeoff services for commercial, residential, and industrial projects, including remodels, new construction, high-rise buildings, multifamily developments, restaurants, mixed-use projects, warehouses, and more. We work with general contractors, subcontractors, developers, architects, owners, lenders, appraisers, and insurance companies."
+  },
+  {
+    question: "If the job changes or an addendum comes through, can you update the quote? Does that cost extra?",
+    answer:
+      "Yes. Minor addendums received during the tender period are typically updated at no additional charge. If major changes significantly affect the scope of work, we'll review the revisions and provide a quote for any additional estimating required."
   }
 ];

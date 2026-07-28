@@ -42,34 +42,32 @@ export function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
           ? "bg-white/95 backdrop-blur-md border-b border-border shadow-sm py-4"
           : "bg-transparent py-6"
-      }`}
+        }`}
     >
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
-            
+
             {/* <div className="bg-primary text-primary-foreground p-2 rounded-full shadow-lg group-hover:scale-105 transition-transform">
               <Target size={22} className="text-white" />
             </div> */}
 
-  <div className="group-hover:scale-105 transition-transform">
-    <img
-      src={logo}
-      alt="Boomerang Estimating Logo"
-      className="w-10 h-10 object-contain"
-    />
-  </div>
+            <div className="group-hover:scale-105 transition-transform">
+              <img
+                src={logo}
+                alt="Boomerang Estimating Logo"
+                className="w-10 h-10 object-contain"
+              />
+            </div>
 
 
 
             <span
-              className={`text-2xl font-bold tracking-tight ${
-                isDarkHero ? "text-white" : "text-foreground"
-              }`}
+              className={`text-2xl font-bold tracking-tight ${isDarkHero ? "text-white" : "text-foreground"
+                }`}
             >
               Boomerang <span className="font-light">Estimating</span>
             </span>
@@ -78,17 +76,15 @@ export function Navbar() {
           <nav className="hidden md:flex items-center gap-8">
             <Link
               href="/"
-              className={`text-sm font-semibold transition-colors hover:text-primary ${
-                location === "/" ? "text-primary" : isDarkHero ? "text-white/90" : "text-muted-foreground"
-              }`}
+              className={`text-sm font-semibold transition-colors hover:text-primary ${location === "/" ? "text-primary" : isDarkHero ? "text-white/90" : "text-muted-foreground"
+                }`}
             >
               Home
             </Link>
             <Link
               href="/about"
-              className={`text-sm font-semibold transition-colors hover:text-primary ${
-                location === "/about" ? "text-primary" : isDarkHero ? "text-white/90" : "text-muted-foreground"
-              }`}
+              className={`text-sm font-semibold transition-colors hover:text-primary ${location === "/about" ? "text-primary" : isDarkHero ? "text-white/90" : "text-muted-foreground"
+                }`}
             >
               About
             </Link>
@@ -96,9 +92,8 @@ export function Navbar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className={`text-sm font-semibold flex items-center gap-1 transition-colors hover:text-primary ${
-                    location.startsWith("/services") ? "text-primary" : isDarkHero ? "text-white/90" : "text-muted-foreground"
-                  }`}
+                  className={`text-sm font-semibold flex items-center gap-1 transition-colors hover:text-primary ${location.startsWith("/services") ? "text-primary" : isDarkHero ? "text-white/90" : "text-muted-foreground"
+                    }`}
                 >
                   Services <ChevronDown size={14} />
                 </button>
@@ -123,13 +118,12 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-semibold transition-colors hover:text-primary ${
-                  location === link.href
+                className={`text-sm font-semibold transition-colors hover:text-primary ${location === link.href
                     ? "text-primary"
                     : isDarkHero
-                    ? "text-white/90"
-                    : "text-muted-foreground"
-                }`}
+                      ? "text-white/90"
+                      : "text-muted-foreground"
+                  }`}
               >
                 {link.label}
               </Link>
@@ -143,9 +137,8 @@ export function Navbar() {
           </nav>
 
           <button
-            className={`md:hidden p-2 rounded-md ${
-              isDarkHero ? "text-white" : "text-foreground"
-            }`}
+            className={`md:hidden p-2 rounded-md ${isDarkHero ? "text-white" : "text-foreground"
+              }`}
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Toggle menu"
           >
@@ -160,9 +153,8 @@ export function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`block px-4 py-3 rounded-lg text-lg font-semibold ${
-                location === link.href ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"
-              }`}
+              className={`block px-4 py-3 rounded-lg text-lg font-semibold ${location === link.href ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"
+                }`}
             >
               {link.label}
             </Link>
