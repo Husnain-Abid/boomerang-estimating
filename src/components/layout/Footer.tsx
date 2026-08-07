@@ -1,11 +1,13 @@
 import { Link } from "wouter";
-import {  MapPin, Phone, Mail, ArrowRight } from "lucide-react";
+import { MapPin, Phone, Mail, ArrowRight } from "lucide-react";
 import { COMPANY_INFO, SERVICES } from "@/lib/data";
 import logo from "../../../public/LOGO/ICON.png";
 
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const firstHalf = SERVICES.slice(0, 4);
+
 
   return (
     <footer className="bg-secondary text-secondary-foreground pt-24 pb-12 relative overflow-hidden">
@@ -15,21 +17,21 @@ export function Footer() {
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
-          
+
           <div className="lg:col-span-4">
             <Link href="/" className="flex items-center gap-2 mb-6 group inline-flex">
-       
+
               {/* <div className="bg-primary text-primary-foreground p-2 rounded-full shadow-lg group-hover:scale-105 transition-transform">
                 <Target size={22} className="text-white" />
               </div> */}
-       
-         <div className="group-hover:scale-105 transition-transform">
-    <img
-      src={logo}
-      alt="Boomerang Estimating Logo"
-      className="w-10 h-10 object-contain"
-    />
-  </div>
+
+              <div className="group-hover:scale-105 transition-transform">
+                <img
+                  src={logo}
+                  alt="Boomerang Estimating Logo"
+                  className="w-10 h-10 object-contain"
+                />
+              </div>
 
 
               <span className="text-2xl font-bold tracking-tight text-white">
@@ -37,7 +39,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-secondary-foreground/70 mb-8 max-w-sm leading-relaxed text-lg">
-              Premium quantity takeoff and cost estimation services for the Australian construction industry. 
+              Premium quantity takeoff and cost estimation services for the Australian construction industry.
             </p>
             <div className="flex gap-4">
               <a href={COMPANY_INFO.socials.linkedin} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-primary hover:text-white transition-all shadow-sm" aria-label="LinkedIn">
@@ -49,7 +51,7 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="lg:col-span-2 lg:col-start-6">
+          <div className="lg:col-span-2 ">
             <h3 className="text-lg font-semibold text-white mb-6 tracking-wide">Quick Links</h3>
             <ul className="flex flex-col gap-4">
               {['About', 'Portfolio', 'Testimonials', 'FAQ', 'Contact'].map(link => (
@@ -66,7 +68,7 @@ export function Footer() {
           <div className="lg:col-span-3">
             <h3 className="text-lg font-semibold text-white mb-6 tracking-wide">Our Services</h3>
             <ul className="flex flex-col gap-4">
-              {SERVICES.map((service) => (
+              {firstHalf.map((service) => (
                 <li key={service.id}>
                   <Link href={`/services/${service.slug}`} className="text-secondary-foreground/70 hover:text-primary transition-colors flex items-center gap-2 group font-medium">
                     <ArrowRight size={14} className="opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all text-primary" />

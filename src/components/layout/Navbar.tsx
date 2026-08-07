@@ -43,8 +43,8 @@ export function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-          ? "bg-white/95 backdrop-blur-md border-b border-border shadow-sm py-4"
-          : "bg-transparent py-6"
+        ? "bg-white/95 backdrop-blur-md border-b border-border shadow-sm py-4"
+        : "bg-transparent py-6"
         }`}
     >
       <div className="container mx-auto px-4 md:px-6">
@@ -98,7 +98,10 @@ export function Navbar() {
                   Services <ChevronDown size={14} />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="center" className="w-56 p-2 rounded-xl shadow-xl">
+              <DropdownMenuContent align="start"
+                alignOffset={-4}   // ya 4, apni need ke mutabiq
+                sideOffset={8}
+                className="w-56 p-2 rounded-xl shadow-xl">
                 {SERVICES.map((s) => (
                   <DropdownMenuItem key={s.id} asChild className="cursor-pointer rounded-lg px-3 py-2.5 hover:bg-muted">
                     <Link href={`/services/${s.slug}`} className="w-full">
@@ -119,10 +122,10 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={`text-sm font-semibold transition-colors hover:text-primary ${location === link.href
-                    ? "text-primary"
-                    : isDarkHero
-                      ? "text-white/90"
-                      : "text-muted-foreground"
+                  ? "text-primary"
+                  : isDarkHero
+                    ? "text-white/90"
+                    : "text-muted-foreground"
                   }`}
               >
                 {link.label}

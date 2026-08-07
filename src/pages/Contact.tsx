@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { easeOut, motion } from "framer-motion";import { MapPin, Phone, Mail, Clock, Send, Calendar, MessageCircle, CheckCircle2 } from "lucide-react";
+import { easeOut, motion } from "framer-motion"; import { MapPin, Phone, Mail, Clock, Send, Calendar, MessageCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: easeOut} },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: easeOut } },
 };
 const stagger = (d = 0.1) => ({ hidden: {}, visible: { transition: { staggerChildren: d } } });
 
@@ -20,8 +20,12 @@ const schema = z.object({
   email: z.string().email("Valid email is required"),
   phone: z.string().min(8, "Phone number is required"),
   companyName: z.string().optional(),
+  website: z.string().url("Enter a valid website").optional().or(z.literal("")),
+  deadline: z.string().optional(),
+  file: z.any().optional(),
   message: z.string().min(10, "Please provide at least 10 characters"),
 });
+
 type FormData = z.infer<typeof schema>;
 
 const CONTACT_ITEMS = [
@@ -35,8 +39,22 @@ export default function Contact() {
   const { toast } = useToast();
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { fullName: "", email: "", phone: "", companyName: "", message: "" },
+    defaultValues: {
+      fullName: "",
+      email: "",
+      phone: "",
+      companyName: "",
+      website: "",
+      deadline: "",
+      file: undefined,
+      message: "",
+    },
   });
+
+
+
+
+
 
   const onSubmit = (data: FormData) => {
     console.log(data);
