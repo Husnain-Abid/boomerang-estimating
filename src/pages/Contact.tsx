@@ -1,13 +1,16 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { easeOut, motion } from "framer-motion"; import { MapPin, Phone, Mail, Clock, Send, Calendar, MessageCircle, CheckCircle2 } from "lucide-react";
+import { easeOut, motion } from "framer-motion";
+import { MapPin, Phone, Mail, Clock, Send, Calendar, MessageCircle, CheckCircle2, Upload, FileText, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { COMPANY_INFO } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
+import { useDropzone } from "react-dropzone";
+
 
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },
@@ -15,18 +18,194 @@ const fadeUp = {
 };
 const stagger = (d = 0.1) => ({ hidden: {}, visible: { transition: { staggerChildren: d } } });
 
+
+/* -------------------------------------------------------------------------- */
+/* Schema                                                                     */
+/* -------------------------------------------------------------------------- */
+
 const schema = z.object({
   fullName: z.string().min(2, "Full name is required"),
+
   email: z.string().email("Valid email is required"),
-  phone: z.string().min(8, "Phone number is required"),
-  companyName: z.string().optional(),
-  website: z.string().url("Enter a valid website").optional().or(z.literal("")),
-  deadline: z.string().optional(),
-  file: z.any().optional(),
-  message: z.string().min(10, "Please provide at least 10 characters"),
+
+  companyName: z
+    .string()
+    .min(2, "Company name is required"),
+
+  website: z
+    .string()
+    .min(1, "Company website is required")
+    .url("Enter a valid website"),
+
+  deadline: z
+    .string()
+    .min(1, "Project deadline is required"),
+
+  message: z
+    .string()
+    .min(10, "Please provide at least 10 characters"),
+
+  file: z
+    .instanceof(File, {
+      message: "Please upload a file",
+    })
+    .optional(),
+
+
 });
 
+
+
+
+
+
+
+
+
+
 type FormData = z.infer<typeof schema>;
+
+/* -------------------------------------------------------------------------- */
+/* File Dropzone                                                              */
+/* -------------------------------------------------------------------------- */
+
+function FileDropzone({
+  value,
+  onChange,
+}: {
+  value?: File;
+  onChange: (file: File | undefined) => void;
+}) {
+  const onDrop = (acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) {
+      onChange(acceptedFiles[0]);
+    }
+  };
+
+  const {
+    getRootProps,
+    getInputProps,
+    isDragActive,
+    fileRejections,
+  } = useDropzone({
+    onDrop,
+    multiple: false,
+    maxSize: 10 * 1024 * 1024,
+
+    accept: {
+      "application/pdf": [".pdf"],
+      "application/msword": [".doc"],
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        [".docx"],
+      "application/vnd.ms-excel": [".xls"],
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+        ".xlsx",
+      ],
+      "text/csv": [".csv"],
+      "image/jpeg": [".jpg", ".jpeg"],
+      "image/png": [".png"],
+    },
+  });
+
+  return (
+    <div className="space-y-2">
+      {!value ? (
+        <div
+          {...getRootProps()}
+          className={`
+            border-2 border-dashed rounded-xl bg-white
+            p-8 text-center cursor-pointer
+            transition-all duration-200
+            ${isDragActive
+              ? "border-primary bg-primary/10"
+              : "border-border hover:border-primary/50 hover:bg-primary/5"
+            }
+          `}
+        >
+          <input {...getInputProps()} />
+
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+            <Upload
+              size={22}
+              className="text-primary"
+            />
+          </div>
+
+          {isDragActive ? (
+            <p className="font-semibold text-primary">
+              Drop your file here
+            </p>
+          ) : (
+            <>
+              <p className="font-semibold mb-1">
+                Drag & drop your file here
+              </p>
+
+              <p className="text-sm text-muted-foreground mb-3">
+                or click to browse
+              </p>
+
+              <p className="text-xs text-muted-foreground">
+                PDF, Word, Excel, CSV, JPG or PNG
+              </p>
+
+              <p className="text-xs text-muted-foreground mt-1">
+                Maximum file size: 10MB
+              </p>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-border bg-background">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <FileText
+                size={20}
+                className="text-primary"
+              />
+            </div>
+
+            <div className="min-w-0">
+              <p className="font-semibold text-sm truncate">
+                {value.name}
+              </p>
+
+              <p className="text-xs text-muted-foreground">
+                {(value.size / 1024 / 1024).toFixed(2)} MB
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onChange(undefined)}
+            className="
+              w-8 h-8 rounded-full
+              flex items-center justify-center
+              hover:bg-destructive/10
+              hover:text-destructive
+              transition-colors
+              flex-shrink-0
+            "
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {fileRejections.length > 0 && (
+        <p className="text-xs text-destructive">
+          Please upload a supported file smaller than 10MB.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Form                                                                       */
+/* -------------------------------------------------------------------------- */
+
 
 const CONTACT_ITEMS = [
   { icon: Phone, label: "Phone", value: COMPANY_INFO.phone, href: `tel:${COMPANY_INFO.phone}` },
@@ -36,31 +215,35 @@ const CONTACT_ITEMS = [
 ];
 
 export default function Contact() {
+
   const { toast } = useToast();
+
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
+
     defaultValues: {
       fullName: "",
       email: "",
-      phone: "",
       companyName: "",
       website: "",
       deadline: "",
-      file: undefined,
       message: "",
+      file: undefined,
     },
   });
 
-
-
-
-
-
   const onSubmit = (data: FormData) => {
-    console.log(data);
-    toast({ title: "Message Sent!", description: "We'll be in touch within 2-4 business hours." });
+    console.log("Form Data:", data);
+
+    toast({
+      title: "Message Sent!",
+      description:
+        "We'll be in touch within 2-4 business hours.",
+    });
+
     form.reset();
   };
+
 
   return (
     <div className="w-full pt-20 overflow-hidden">
@@ -170,59 +353,218 @@ export default function Contact() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
+
               <div className="bg-muted rounded-2xl p-8 md:p-10 border border-border">
-                <h2 className="text-2xl font-extrabold mb-2 tracking-tight">Send a Message</h2>
-                <p className="text-muted-foreground mb-8">Fill in the form and we'll get back to you within 2-4 business hours.</p>
+                <h2 className="text-2xl font-extrabold mb-2 tracking-tight">
+                  Send a Message
+                </h2>
+
+                <p className="text-muted-foreground mb-8">
+                  Fill in the form and we'll get back to you within 2-4 business hours.
+                </p>
 
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-5"
+                  >
+                    {/* Full Name + Email */}
                     <div className="grid sm:grid-cols-2 gap-5">
-                      <FormField control={form.control} name="fullName" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">Full Name *</FormLabel>
-                          <FormControl><Input placeholder="John Smith" className="rounded-xl h-12 bg-background" {...field} data-testid="input-name" /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="companyName" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">Company Name</FormLabel>
-                          <FormControl><Input placeholder="BuildRight Pty Ltd" className="rounded-xl h-12 bg-background" {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
+                      <FormField
+                        control={form.control}
+                        name="fullName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="font-semibold">
+                              Full Name *
+                            </FormLabel>
+
+                            <FormControl>
+                              <Input
+                                placeholder="John Smith"
+                                className="rounded-xl h-12 bg-background"
+                                {...field}
+                              />
+                            </FormControl>
+
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="font-semibold">
+                              Email Address *
+                            </FormLabel>
+
+                            <FormControl>
+                              <Input
+                                type="email"
+                                placeholder="john@example.com"
+                                className="rounded-xl h-12 bg-background"
+                                {...field}
+                              />
+                            </FormControl>
+
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
                     </div>
+
+                    {/* Project Description */}
+                    <FormField
+                      control={form.control}
+                      name="message"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-semibold">
+                            Project Description *
+                          </FormLabel>
+
+                          <FormControl>
+                            <Textarea
+                              placeholder="Tell us about your project and requirements..."
+                              className="
+                      min-h-[160px]
+                      rounded-xl
+                      bg-background
+                      resize-none
+                    "
+                              {...field}
+                            />
+                          </FormControl>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+
+                    {/*Company Name + Website */}
                     <div className="grid sm:grid-cols-2 gap-5">
-                      <FormField control={form.control} name="email" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">Email Address *</FormLabel>
-                          <FormControl><Input type="email" placeholder="john@example.com" className="rounded-xl h-12 bg-background" {...field} data-testid="input-email" /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="phone" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="font-semibold">Phone Number *</FormLabel>
-                          <FormControl><Input placeholder="0400 000 000" className="rounded-xl h-12 bg-background" {...field} data-testid="input-phone" /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
+
+                      <FormField
+                        control={form.control}
+                        name="companyName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="font-semibold">
+                              Company Name
+                            </FormLabel>
+
+                            <FormControl>
+                              <Input
+                                placeholder="BuildRight Pty Ltd"
+                                className="rounded-xl h-12 bg-background"
+                                {...field}
+                              />
+                            </FormControl>
+
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="website"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="font-semibold">
+                              Company Website
+                            </FormLabel>
+
+                            <FormControl>
+                              <Input
+                                type="url"
+                                placeholder="https://example.com"
+                                className="rounded-xl h-12 bg-background"
+                                {...field}
+                              />
+                            </FormControl>
+
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
                     </div>
-                    <FormField control={form.control} name="message" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-semibold">Message *</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="Tell us about your project and requirements..." className="min-h-[140px] rounded-xl bg-background resize-none" {...field} data-testid="textarea-message" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <Button type="submit" size="lg" className="w-full rounded-full font-bold text-base py-6 shadow-lg shadow-primary/20" data-testid="button-submit">
-                      <Send size={18} className="mr-2" /> Send Message
+
+                    {/* Project Deadline */}
+                    <FormField
+                      control={form.control}
+                      name="deadline"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-semibold">
+                            Project Deadline
+                          </FormLabel>
+
+                          <FormControl>
+                            <Input
+                              type="date"
+                              className="rounded-xl h-12 bg-background"
+                              {...field}
+                            />
+                          </FormControl>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+
+
+                    {/* Upload File */}
+                    <FormField
+                      control={form.control}
+                      name="file"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-semibold">
+                            Upload File
+                          </FormLabel>
+
+                          <FormControl>
+                            <FileDropzone
+                              value={field.value}
+                              onChange={field.onChange}
+                            />
+                          </FormControl>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Submit */}
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="
+              w-full
+              rounded-full
+              font-bold
+              text-base
+              py-6
+              shadow-lg
+              shadow-primary/20
+            "
+                    >
+                      <Send size={18} className="mr-2" />
+                      Send Message
                     </Button>
                   </form>
                 </Form>
               </div>
+
+
             </motion.div>
           </div>
         </div>

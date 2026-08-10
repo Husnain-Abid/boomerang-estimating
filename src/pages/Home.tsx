@@ -175,12 +175,12 @@ const INDUSTRIES = [
 ];
 
 const DELIVERABLES = [
-  { icon: FileSpreadsheet, label: "Excel BOQ", desc: "Fully editable Bill of Quantities" },
-  { icon: FileText, label: "PDF Estimate", desc: "Professional summary report" },
-  { icon: PenTool, label: "Marked-Up Plans", desc: "Annotated drawing sets" },
-  { icon: Layers, label: "Material Quantities", desc: "Trade-by-trade breakdown" },
-  { icon: Users, label: "Labour Breakdown", desc: "Unit rate analysis" },
   { icon: BarChart3, label: "Cost Summary", desc: "Executive overview" },
+  // { icon: FileSpreadsheet, label: "Excel BOQ", desc: "Fully editable Bill of Quantities" },
+  // { icon: FileText, label: "PDF Estimate", desc: "Professional summary report" },
+  { icon: PenTool, label: "Marked-Up Plans", desc: "Annotated drawing sets" },
+  // { icon: Layers, label: "Material Quantities", desc: "Trade-by-trade breakdown" },
+  // { icon: Users, label: "Labour Breakdown", desc: "Unit rate analysis" },
 ];
 
 const SOFTWARE = ["Bluebeam", "Planswift", "On-Screen Takeoff", "CostX", "Cubit", "Buildsoft", "Xactimate", "Stack"];
@@ -565,39 +565,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── WHAT YOU RECEIVE ────────────────────────── */}
-      <section className="py-28 bg-muted">
-        <div className="container mx-auto px-4 md:px-6">
-          <motion.div className="text-center mb-16" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger()}>
-            <motion.span variants={fadeUp} className="text-primary font-bold text-sm uppercase tracking-[0.15em] block mb-3">Deliverables</motion.span>
-            <motion.h2 variants={fadeUp} className="text-4xl md:text-5xl font-extrabold tracking-tight">What You Receive</motion.h2>
-            <motion.p variants={fadeUp} className="text-muted-foreground text-lg mt-4 max-w-xl mx-auto">Every estimate includes a comprehensive package of professional documents.</motion.p>
-          </motion.div>
-          <motion.div
-            className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto"
-            variants={stagger(0.08)}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            {DELIVERABLES.map(({ icon: Icon, label, desc }) => (
-              <motion.div
-                key={label}
-                variants={fadeUp}
-                className="bg-background rounded-2xl p-6 border border-border hover:border-primary/30 hover:shadow-xl transition-all duration-300 group"
-                whileHover={{ y: -3 }}
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary transition-colors duration-300">
-                  <Icon size={22} className="text-primary group-hover:text-white transition-colors duration-300" />
-                </div>
-                <div className="font-bold mb-1">{label}</div>
-                <div className="text-muted-foreground text-sm">{desc}</div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
       {/* ── TESTIMONIALS ────────────────────────────── */}
       <section className="py-28 bg-secondary relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
@@ -660,8 +627,82 @@ export default function Home() {
         </div>
       </section>
 
+
+      {/* ── WHAT YOU RECEIVE ────────────────────────── */}
+      <section className="py-28 bg-muted">
+        <div className="container mx-auto px-4 md:px-6">
+
+          <motion.div
+            className="text-center mb-16"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger()}
+          >
+            <motion.span
+              variants={fadeUp}
+              className="text-primary font-bold text-sm uppercase tracking-[0.15em] block mb-3"
+            >
+              Deliverables
+            </motion.span>
+
+            <motion.h2
+              variants={fadeUp}
+              className="text-4xl md:text-5xl font-extrabold tracking-tight"
+            >
+              What You Receive
+            </motion.h2>
+
+            <motion.p
+              variants={fadeUp}
+              className="text-muted-foreground text-lg mt-4 max-w-xl mx-auto"
+            >
+              Every estimate includes a comprehensive package of professional documents.
+            </motion.p>
+          </motion.div>
+
+          <motion.div className="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-5 max-w-3xl mx-auto"
+            variants={stagger(0.08)}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {DELIVERABLES.map(({ icon: Icon, label, desc }) => (
+              <motion.div key={label} variants={fadeUp} whileHover={{ y: -3 }}
+                className="bg-background rounded-xl p-5 md:p-6 border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 group text-center flex flex-col items-center justify-center min-h-[170px]" >
+                {/* Icon */}
+                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary transition-colors duration-300">
+                  <Icon
+                    size={20}
+                    className="
+                text-primary
+                group-hover:text-white
+                transition-colors
+                duration-300
+              "
+                  />
+                </div>
+
+                {/* Title */}
+                <div className="font-bold text-sm md:text-base mb-1">
+                  {label}
+                </div>
+
+                {/* Description */}
+                <div className="text-muted-foreground text-xs md:text-sm max-w-[240px]">
+                  {desc}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+        </div>
+      </section>
+
+
+
       {/* ── FAQ PREVIEW ─────────────────────────────── */}
-      <section className="py-28 bg-background">
+      {/* <section className="py-28 bg-background">
         <div className="container mx-auto px-4 md:px-6 max-w-3xl">
           <motion.div className="text-center mb-16" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger()}>
             <motion.span variants={fadeUp} className="text-primary font-bold text-sm uppercase tracking-[0.15em] block mb-3">Common Questions</motion.span>
@@ -689,7 +730,7 @@ export default function Home() {
             </div>
           </motion.div>
         </div>
-      </section>
+      </section> */}
 
       {/* ── FINAL CTA ───────────────────────────────── */}
       <section className="py-28 bg-secondary relative overflow-hidden">
@@ -708,9 +749,9 @@ export default function Home() {
               <Button size="lg" className="text-base px-10 py-7 rounded-full font-bold shadow-xl shadow-primary/30" asChild>
                 <Link href="/request-quote">Request a Quote <ArrowRight size={18} className="ml-2" /></Link>
               </Button>
-              <Button size="lg" variant="outline" className="text-base px-10 py-7 rounded-full font-bold bg-transparent border-white/20 text-white hover:bg-white/10" asChild>
+              {/* <Button size="lg" variant="outline" className="text-base px-10 py-7 rounded-full font-bold bg-transparent border-white/20 text-white hover:bg-white/10" asChild>
                 <Link href="/contact">Book Discovery Call</Link>
-              </Button>
+              </Button> */}
               <a
                 href={COMPANY_INFO.whatsapp}
                 target="_blank"
