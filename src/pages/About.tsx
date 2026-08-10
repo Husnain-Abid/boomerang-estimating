@@ -2,9 +2,7 @@ import { cubicBezier, motion } from "framer-motion";
 import { Link } from "wouter";
 import {
   ArrowRight,
-  CheckCircle2,
   Target,
-  TrendingUp,
   Users,
   Award,
   Shield,
@@ -16,11 +14,11 @@ import {
   Calculator,
   BadgeCheck,
   Send,
-  Building2,
   LayoutGrid,
   Ruler,
   FileCheck2,
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 
 const easeOut = cubicBezier(0.22, 1, 0.36, 1);
@@ -54,13 +52,13 @@ const WHY_STATS = [
   { value: "100%", label: "Client Satisfaction" },
 ];
 
-const PROCESS = [
-  { icon: FileSearch, step: "01", title: "Receive Drawings", desc: "You send through architectural, structural, or civil drawings in any common format." },
-  { icon: ClipboardList, step: "02", title: "Review Project", desc: "Our estimators review scope, specifications, and site conditions before takeoff begins." },
-  { icon: Calculator, step: "03", title: "Prepare Estimate", desc: "A full quantity takeoff and cost estimate is built using current market pricing." },
-  { icon: FileCheck2, step: "04", title: "Quality Check", desc: "A second estimator independently verifies every line item for accuracy and completeness." },
-  { icon: Send, step: "05", title: "Deliver Estimate", desc: "Your finished estimate is delivered on time, in a format ready to submit with your bid." },
-];
+// const PROCESS = [
+//   { icon: FileSearch, step: "01", title: "Receive Drawings", desc: "You send through architectural, structural, or civil drawings in any common format." },
+//   { icon: ClipboardList, step: "02", title: "Review Project", desc: "Our estimators review scope, specifications, and site conditions before takeoff begins." },
+//   { icon: Calculator, step: "03", title: "Prepare Estimate", desc: "A full quantity takeoff and cost estimate is built using current market pricing." },
+//   { icon: FileCheck2, step: "04", title: "Quality Check", desc: "A second estimator independently verifies every line item for accuracy and completeness." },
+//   { icon: Send, step: "05", title: "Deliver Estimate", desc: "Your finished estimate is delivered on time, in a format ready to submit with your bid." },
+// ];
 
 const STANDARDS = [
   { icon: Shield, label: "Australian Standards" },
