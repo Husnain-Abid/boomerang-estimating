@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { cubicBezier, motion, AnimatePresence, useInView } from "framer-motion";
 import { Link } from "wouter";
 
-import {  ArrowRight,  CheckCircle2, Clock,  Home as HomeIcon,
+import {
+  ArrowRight, CheckCircle2, Clock, Home as HomeIcon,
   Building2,
   Ruler,
   Star,
@@ -99,6 +100,16 @@ function DashboardMockup() {
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       >
+        {/* Header bar */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-red-400/60" />
+            <div className="w-3 h-3 rounded-full bg-yellow-400/60" />
+            <div className="w-3 h-3 rounded-full bg-green-400/60" />
+          </div>
+          <div className="text-xs text-white/40 font-mono">Boomerang Estimate v2.4</div>
+        </div>
+
         {/* Header bar */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex gap-1.5">
@@ -245,7 +256,8 @@ export default function Home() {
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
 
         <div className="container mx-auto px-4 md:px-6 py-20 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="grid lg:grid-cols-[1.5fr_1fr] gap-8 items-center">
+
             {/* Left */}
             <motion.div initial="hidden" animate="visible" variants={stagger(0.12)}>
               <motion.div variants={fadeUp}>
@@ -255,16 +267,50 @@ export default function Home() {
                 </span>
               </motion.div>
 
-              <motion.h1 variants={fadeUp} className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.05] mb-6 tracking-tight">
-                Accurate Estimates.<br />
+              <motion.h1 variants={fadeUp} className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-[1.05] mb-6 tracking-tight">
+                Professional Construction<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-amber-400">
-                  On Time. Every Time.
+                  Cost Estimating For Australia.
                 </span>
               </motion.h1>
 
-              <motion.p variants={fadeUp} className="text-lg text-white/60 mb-10 max-w-lg leading-relaxed">
-                Premium quantity takeoffs and cost estimates for residential, commercial, and civil projects across Australia — delivered in as little as 24 hours.
-              </motion.p>
+
+              <motion.div variants={fadeUp} className="text-sm text-white/60 mb-10 max-w-2xl leading-relaxed">
+                <p className="mb-4">
+                  Before the tools come out, get the numbers right.
+                </p>
+
+                <p className="mb-4">
+                  Whether you're pricing a tender, locking in a budget, or comparing supplier quotes,
+                  Boomerang Estimating gives you a clear, trade-by-trade picture of what your project
+                  will actually cost.
+                </p>
+
+                <p className="mb-6">
+                  From your drawings, we produce detailed quantity takeoffs, BOQs, and cost plans —
+                  built for builders, contractors, subcontractors, developers, architects, suppliers,
+                  and owner-builders across Australia.
+                </p>
+
+                <p className="mb-3">What you get:</p>
+
+                <ul className="list-disc pl-5 space-y-2">
+                  <li>
+                    Trade-by-trade cost breakdowns across residential, commercial, civil, and structural work
+                  </li>
+                  <li>
+                    Quantity takeoffs, BOQs, cost plans, and marked-up drawings
+                  </li>
+                  <li>
+                    Excel-ready reports, formatted for direct use in your budgeting or tender workflow
+                  </li>
+                  <li>
+                    Estimating support built around how builders and contractors actually price jobs
+                  </li>
+                </ul>
+              </motion.div>
+
+
 
               <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 mb-12">
                 <Button size="lg" className="text-base px-8 py-6 rounded-full font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow" asChild>
@@ -287,6 +333,37 @@ export default function Home() {
 
             {/* Right — Dashboard */}
             <DashboardMockup />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
           </div>
         </div>
       </section>

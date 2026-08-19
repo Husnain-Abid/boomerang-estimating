@@ -41,12 +41,24 @@ export function Navbar() {
   const isDarkHero = location === "/" && !isScrolled;
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-        ? "bg-white/95 backdrop-blur-md border-b border-border shadow-sm py-4"
-        : "bg-transparent py-6"
-        }`}
-    >
+    // <header
+    //   className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+    //     ? "bg-white/95 backdrop-blur-md border-b border-border shadow-sm py-4"
+    //     : " bg-white/95 backdrop-blur-md border-b border-border shadow-sm py-4 "
+    //     }`}
+    // >
+
+<header
+  className={`fixed left-0 right-0 z-50 transition-all duration-10 ${
+    isScrolled
+      ? "top-0 bg-white/95 backdrop-blur-md border-b border-border shadow-sm py-4"
+      : "top-[56px] bg-white/95 backdrop-blur-md border-b border-border shadow-sm py-4"
+  }`}
+>
+
+
+
+
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
@@ -66,8 +78,7 @@ export function Navbar() {
 
 
             <span
-              className={`text-2xl font-bold tracking-tight ${isDarkHero ? "text-white" : "text-foreground"
-                }`}
+              className={`text-2xl font-bold tracking-tight text-foreground`}
             >
               Boomerang <span className="font-light">Estimating</span>
             </span>
@@ -76,14 +87,13 @@ export function Navbar() {
           <nav className="hidden md:flex items-center gap-8">
             <Link
               href="/"
-              className={`text-sm font-semibold transition-colors hover:text-primary ${location === "/" ? "text-primary" : isDarkHero ? "text-white/90" : "text-muted-foreground"
-                }`}
+              className={`text-sm font-semibold transition-colors hover:text-primary ${location === "/" ? "text-primary" :  "text-muted-foreground"}`}
             >
               Home
             </Link>
             <Link
               href="/about"
-              className={`text-sm font-semibold transition-colors hover:text-primary ${location === "/about" ? "text-primary" : isDarkHero ? "text-white/90" : "text-muted-foreground"
+              className={`text-sm font-semibold transition-colors hover:text-primary ${location === "/about" ? "text-primary" :  "text-muted-foreground"
                 }`}
             >
               About
@@ -92,8 +102,7 @@ export function Navbar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className={`text-sm font-semibold flex items-center gap-1 transition-colors hover:text-primary ${location.startsWith("/services") ? "text-primary" : isDarkHero ? "text-white/90" : "text-muted-foreground"
-                    }`}
+                  className={`text-sm font-semibold flex items-center gap-1 transition-colors hover:text-primary ${location.startsWith("/services") ? "text-primary" : "text-muted-foreground" }`}
                 >
                   Services <ChevronDown size={14} />
                 </button>
@@ -122,11 +131,7 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={`text-sm font-semibold transition-colors hover:text-primary ${location === link.href
-                  ? "text-primary"
-                  : isDarkHero
-                    ? "text-white/90"
-                    : "text-muted-foreground"
-                  }`}
+                  ? "text-primary" : "text-muted-foreground"}`}
               >
                 {link.label}
               </Link>
