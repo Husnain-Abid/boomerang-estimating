@@ -10,7 +10,7 @@ import { TopBar } from "./TopBar";
 export function PageLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex flex-col min-h-[100dvh]">
-            <TopBar />
+      <TopBar />
 
       <Navbar />
       <main className="flex-grow">

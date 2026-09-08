@@ -1,32 +1,87 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import emailjs from "@emailjs/browser";
 import { easeOut, motion } from "framer-motion";
-import { MapPin, Phone, Mail, Clock, Send, Calendar, MessageCircle, CheckCircle2, Upload, FileText, X } from "lucide-react";
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
+  Send,
+  Calendar,
+  MessageCircle,
+  CheckCircle2,
+  Upload,
+  FileText,
+  X,
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
 import { COMPANY_INFO } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { useDropzone } from "react-dropzone";
 
+/* -------------------------------------------------------------------------- */
+/* EmailJS Configuration                                                      */
+/* -------------------------------------------------------------------------- */
+
+// IMPORTANT:
+// Replace these values with your actual EmailJS values.
+
+const EMAILJS_SERVICE_ID = "service_wg7bp55";
+const EMAILJS_TEMPLATE_ID = "template_q64htkv";
+const EMAILJS_PUBLIC_KEY = "HQrDPHxkWKjpqXRXw";
+
+/* -------------------------------------------------------------------------- */
+/* Animations                                                                 */
+/* -------------------------------------------------------------------------- */
 
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: easeOut } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.65,
+      ease: easeOut,
+    },
+  },
 };
-const stagger = (d = 0.1) => ({ hidden: {}, visible: { transition: { staggerChildren: d } } });
 
+const stagger = (d = 0.1) => ({
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: d,
+    },
+  },
+});
 
 /* -------------------------------------------------------------------------- */
 /* Schema                                                                     */
 /* -------------------------------------------------------------------------- */
 
 const schema = z.object({
-  fullName: z.string().min(2, "Full name is required"),
+  fullName: z
+    .string()
+    .min(2, "Full name is required"),
 
-  email: z.string().email("Valid email is required"),
+  email: z
+    .string()
+    .email("Valid email is required"),
 
   companyName: z
     .string()
@@ -50,18 +105,7 @@ const schema = z.object({
       message: "Please upload a file",
     })
     .optional(),
-
-
 });
-
-
-
-
-
-
-
-
-
 
 type FormData = z.infer<typeof schema>;
 
@@ -116,9 +160,10 @@ function FileDropzone({
             border-2 border-dashed rounded-xl bg-white
             p-8 text-center cursor-pointer
             transition-all duration-200
-            ${isDragActive
-              ? "border-primary bg-primary/10"
-              : "border-border hover:border-primary/50 hover:bg-primary/5"
+            ${
+              isDragActive
+                ? "border-primary bg-primary/10"
+                : "border-border hover:border-primary/50 hover:bg-primary/5"
             }
           `}
         >
@@ -203,20 +248,44 @@ function FileDropzone({
 }
 
 /* -------------------------------------------------------------------------- */
-/* Form                                                                       */
+/* Contact Items                                                              */
 /* -------------------------------------------------------------------------- */
 
-
 const CONTACT_ITEMS = [
-  { icon: Phone, label: "Phone", value: COMPANY_INFO.phone, href: `tel:${COMPANY_INFO.phone}` },
-  { icon: Mail, label: "Email", value: COMPANY_INFO.email, href: `mailto:${COMPANY_INFO.email}` },
-  { icon: MapPin, label: "Based In", value: COMPANY_INFO.address, href: undefined },
-  { icon: Clock, label: "Business Hours", value: COMPANY_INFO.hours, href: undefined },
+  {
+    icon: Phone,
+    label: "Phone",
+    value: COMPANY_INFO.phone,
+    href: `tel:${COMPANY_INFO.phone}`,
+  },
+  {
+    icon: Mail,
+    label: "Email",
+    value: COMPANY_INFO.email,
+    href: `mailto:${COMPANY_INFO.email}`,
+  },
+  {
+    icon: MapPin,
+    label: "Based In",
+    value: COMPANY_INFO.address,
+    href: undefined,
+  },
+  {
+    icon: Clock,
+    label: "Business Hours",
+    value: COMPANY_INFO.hours,
+    href: undefined,
+  },
 ];
 
-export default function Contact() {
+/* -------------------------------------------------------------------------- */
+/* Contact Component                                                          */
+/* -------------------------------------------------------------------------- */
 
+export default function Contact() {
   const { toast } = useToast();
+
+  const [isSending, setIsSending] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -232,44 +301,122 @@ export default function Contact() {
     },
   });
 
-  const onSubmit = (data: FormData) => {
-    console.log("Form Data:", data);
+  /* ------------------------------------------------------------------------ */
+  /* Submit Form                                                              */
+  /* ------------------------------------------------------------------------ */
 
-    toast({
-      title: "Message Sent!",
-      description:
-        "We'll be in touch within 2-4 business hours.",
-    });
+  const onSubmit = async (data: FormData) => {
+    try {
+      setIsSending(true);
 
-    form.reset();
+      const templateParams = {
+        fullName: data.fullName,
+        email: data.email,
+        companyName: data.companyName,
+        website: data.website,
+        deadline: data.deadline,
+        message: data.message,
+
+        // File information
+        fileName: data.file?.name || "No file uploaded",
+        fileSize: data.file
+          ? `${(data.file.size / 1024 / 1024).toFixed(2)} MB`
+          : "N/A",
+      };
+
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams,
+        EMAILJS_PUBLIC_KEY
+      );
+
+      console.log("Email sent successfully:", data);
+
+      toast({
+        title: "Message Sent!",
+        description:
+          "Thank you! Your message has been sent successfully.",
+      });
+
+      form.reset();
+    } catch (error) {
+      console.error("EmailJS Error:", error);
+
+      toast({
+        title: "Failed to Send",
+        description:
+          "Something went wrong while sending your message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSending(false);
+    }
   };
-
 
   return (
     <div className="w-full pt-20 overflow-hidden">
-      {/* Hero */}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Hero                                                               */}
+      {/* ------------------------------------------------------------------ */}
+
       <section className="relative bg-secondary py-24 overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage:
+              "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
+
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-[120px]" />
+
         <div className="container mx-auto px-4 md:px-6 relative z-10 max-w-4xl text-center">
-          <motion.div initial="hidden" animate="visible" variants={stagger(0.12)}>
-            <motion.span variants={fadeUp} className="text-primary font-bold text-sm uppercase tracking-[0.15em] block mb-6">Get In Touch</motion.span>
-            <motion.h1 variants={fadeUp} className="text-5xl md:text-6xl font-extrabold text-white leading-[1.1] mb-6 tracking-tight">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={stagger(0.12)}
+          >
+            <motion.span
+              variants={fadeUp}
+              className="text-primary font-bold text-sm uppercase tracking-[0.15em] block mb-6"
+            >
+              Get In Touch
+            </motion.span>
+
+            <motion.h1
+              variants={fadeUp}
+              className="text-5xl md:text-6xl font-extrabold text-white leading-[1.1] mb-6 tracking-tight"
+            >
               Contact <span className="text-primary">Us</span>
             </motion.h1>
-            <motion.p variants={fadeUp} className="text-white/50 text-xl max-w-2xl mx-auto">
-              Have a project in mind? Our estimating experts are ready to discuss your requirements.
+
+            <motion.p
+              variants={fadeUp}
+              className="text-white/50 text-xl max-w-2xl mx-auto"
+            >
+              Have a project in mind? Our estimating experts are ready to
+              discuss your requirements.
             </motion.p>
           </motion.div>
         </div>
       </section>
 
-      {/* Main content */}
+      {/* ------------------------------------------------------------------ */}
+      {/* Main Content                                                       */}
+      {/* ------------------------------------------------------------------ */}
+
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4 md:px-6 max-w-6xl">
+
           <div className="grid lg:grid-cols-5 gap-16">
 
-            {/* Left — Info */}
+            {/* ============================================================ */}
+            {/* Left Side                                                     */}
+            {/* ============================================================ */}
+
             <motion.div
               className="lg:col-span-2 space-y-6"
               initial={{ opacity: 0, x: -30 }}
@@ -278,51 +425,112 @@ export default function Contact() {
               transition={{ duration: 0.6 }}
             >
               <div>
-                <h2 className="text-3xl font-extrabold mb-2 tracking-tight">Let's Talk</h2>
-                <p className="text-muted-foreground leading-relaxed">We typically respond within 2-4 business hours. Prefer to talk? Give us a call directly.</p>
+                <h2 className="text-3xl font-extrabold mb-2 tracking-tight">
+                  Let's Talk
+                </h2>
+
+                <p className="text-muted-foreground leading-relaxed">
+                  We typically respond within 2-4 business hours. Prefer to
+                  talk? Give us a call directly.
+                </p>
               </div>
 
-              {/* Contact items */}
+              {/* Contact Items */}
+
               <div className="space-y-4">
-                {CONTACT_ITEMS.map(({ icon: Icon, label, value, href }) => (
-                  <div key={label} className="flex items-start gap-4 p-4 rounded-xl border border-border hover:border-primary/30 transition-colors group">
-                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary transition-colors duration-300">
-                      <Icon size={18} className="text-primary group-hover:text-white transition-colors duration-300" />
+                {CONTACT_ITEMS.map(
+                  ({ icon: Icon, label, value, href }) => (
+                    <div
+                      key={label}
+                      className="flex items-start gap-4 p-4 rounded-xl border border-border hover:border-primary/30 transition-colors group"
+                    >
+                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary transition-colors duration-300">
+                        <Icon
+                          size={18}
+                          className="text-primary group-hover:text-white transition-colors duration-300"
+                        />
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
+                          {label}
+                        </p>
+
+                        {href ? (
+                          <a
+                            href={href}
+                            className="font-semibold hover:text-primary transition-colors"
+                          >
+                            {value}
+                          </a>
+                        ) : (
+                          <p className="font-semibold">
+                            {value}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-0.5">{label}</p>
-                      {href ? (
-                        <a href={href} className="font-semibold hover:text-primary transition-colors">{value}</a>
-                      ) : (
-                        <p className="font-semibold">{value}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
 
-              {/* Trust indicators */}
+              {/* Trust Indicators */}
+
               <div className="bg-muted rounded-2xl p-5">
-                <p className="font-bold mb-4 text-sm uppercase tracking-wider text-muted-foreground">Why Choose Us</p>
-                {["98% client satisfaction rate", "500+ projects delivered", "24-48h standard turnaround", "Australian standards compliance"].map((item) => (
-                  <div key={item} className="flex items-center gap-2 py-1.5 text-sm">
-                    <CheckCircle2 size={15} className="text-primary flex-shrink-0" />
+                <p className="font-bold mb-4 text-sm uppercase tracking-wider text-muted-foreground">
+                  Why Choose Us
+                </p>
+
+                {[
+                  "98% client satisfaction rate",
+                  "500+ projects delivered",
+                  "24-48h standard turnaround",
+                  "Australian standards compliance",
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-2 py-1.5 text-sm"
+                  >
+                    <CheckCircle2
+                      size={15}
+                      className="text-primary flex-shrink-0"
+                    />
+
                     <span>{item}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Map placeholder */}
+              {/* Map */}
+
               <div className="bg-secondary rounded-2xl h-44 flex items-center justify-center border border-white/10 relative overflow-hidden">
-                <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+                <div
+                  className="absolute inset-0 opacity-5"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
+                    backgroundSize: "30px 30px",
+                  }}
+                />
+
                 <div className="text-center relative z-10">
-                  <MapPin size={32} className="text-primary mx-auto mb-2" />
-                  <p className="text-white/60 text-sm font-medium">Serving All of Australia</p>
-                  <p className="text-white/30 text-xs">Remote · Nationwide</p>
+                  <MapPin
+                    size={32}
+                    className="text-primary mx-auto mb-2"
+                  />
+
+                  <p className="text-white/60 text-sm font-medium">
+                    Serving All of Australia
+                  </p>
+
+                  <p className="text-white/30 text-xs">
+                    Remote · Nationwide
+                  </p>
                 </div>
               </div>
 
               {/* WhatsApp */}
+
               <a
                 href={COMPANY_INFO.whatsapp}
                 target="_blank"
@@ -334,18 +542,36 @@ export default function Contact() {
                 Chat on WhatsApp
               </a>
 
-              {/* Calendly block */}
+              {/* Calendly */}
+
               <div className="border border-border rounded-2xl p-6 text-center">
-                <Calendar size={28} className="text-primary mx-auto mb-3" />
-                <h3 className="font-bold text-lg mb-2">Book a Consultation</h3>
-                <p className="text-muted-foreground text-sm mb-4">Schedule a free 15-minute discovery call to discuss your project.</p>
-                <Button variant="outline" className="w-full rounded-full font-bold border-primary text-primary hover:bg-primary hover:text-white">
+                <Calendar
+                  size={28}
+                  className="text-primary mx-auto mb-3"
+                />
+
+                <h3 className="font-bold text-lg mb-2">
+                  Book a Consultation
+                </h3>
+
+                <p className="text-muted-foreground text-sm mb-4">
+                  Schedule a free 15-minute discovery call to discuss your
+                  project.
+                </p>
+
+                <Button
+                  variant="outline"
+                  className="w-full rounded-full font-bold border-primary text-primary hover:bg-primary hover:text-white"
+                >
                   View Calendly Schedule
                 </Button>
               </div>
             </motion.div>
 
-            {/* Right — Form */}
+            {/* ============================================================ */}
+            {/* Right Side - Form                                             */}
+            {/* ============================================================ */}
+
             <motion.div
               className="lg:col-span-3"
               initial={{ opacity: 0, x: 30 }}
@@ -353,14 +579,15 @@ export default function Contact() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-
               <div className="bg-muted rounded-2xl p-8 md:p-10 border border-border">
+
                 <h2 className="text-2xl font-extrabold mb-2 tracking-tight">
                   Send a Message
                 </h2>
 
                 <p className="text-muted-foreground mb-8">
-                  Fill in the form and we'll get back to you within 2-4 business hours.
+                  Fill in the form and we'll get back to you within 2-4
+                  business hours.
                 </p>
 
                 <Form {...form}>
@@ -368,8 +595,11 @@ export default function Contact() {
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="space-y-5"
                   >
+
                     {/* Full Name + Email */}
+
                     <div className="grid sm:grid-cols-2 gap-5">
+
                       <FormField
                         control={form.control}
                         name="fullName"
@@ -418,6 +648,7 @@ export default function Contact() {
                     </div>
 
                     {/* Project Description */}
+
                     <FormField
                       control={form.control}
                       name="message"
@@ -430,12 +661,7 @@ export default function Contact() {
                           <FormControl>
                             <Textarea
                               placeholder="Tell us about your project and requirements..."
-                              className="
-                      min-h-[160px]
-                      rounded-xl
-                      bg-background
-                      resize-none
-                    "
+                              className="min-h-[160px] rounded-xl bg-background resize-none"
                               {...field}
                             />
                           </FormControl>
@@ -445,8 +671,8 @@ export default function Contact() {
                       )}
                     />
 
+                    {/* Company Name + Website */}
 
-                    {/*Company Name + Website */}
                     <div className="grid sm:grid-cols-2 gap-5">
 
                       <FormField
@@ -496,7 +722,8 @@ export default function Contact() {
 
                     </div>
 
-                    {/* Project Deadline */}
+                    {/* Deadline */}
+
                     <FormField
                       control={form.control}
                       name="deadline"
@@ -519,9 +746,8 @@ export default function Contact() {
                       )}
                     />
 
+                    {/* File Upload */}
 
-
-                    {/* Upload File */}
                     <FormField
                       control={form.control}
                       name="file"
@@ -543,32 +769,38 @@ export default function Contact() {
                       )}
                     />
 
-                    {/* Submit */}
+                    {/* Submit Button */}
+
                     <Button
                       type="submit"
                       size="lg"
-                      className="
-              w-full
-              rounded-full
-              font-bold
-              text-base
-              py-6
-              shadow-lg
-              shadow-primary/20
-            "
+                      disabled={isSending}
+                      className="w-full rounded-full font-bold text-base py-6 shadow-lg shadow-primary/20"
                     >
-                      <Send size={18} className="mr-2" />
-                      Send Message
+                      {isSending ? (
+                        <>
+                          <span className="mr-2 animate-spin">
+                            ⏳
+                          </span>
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send size={18} className="mr-2" />
+                          Send Message
+                        </>
+                      )}
                     </Button>
+
                   </form>
                 </Form>
               </div>
-
-
             </motion.div>
+
           </div>
         </div>
       </section>
     </div>
   );
 }
+

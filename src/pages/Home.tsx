@@ -65,23 +65,101 @@ function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
 }
 
 /* ── Marquee Row ─────────────────────────────────────────── */
-function MarqueeRow({ items, reverse = false, className = "" }: { items: string[]; reverse?: boolean; className?: string }) {
+// function MarqueeRow({ items,  reverse = false,  className = "",  type = "text"}: {
+//   items: string[];
+//   reverse?: boolean;
+//   className?: string;
+//   type?: "text" | "image";
+// }) {
+//   const doubled = [...items, ...items];
+
+//   return (
+//     <div className={`overflow-hidden py-3 ${className}`}>
+//       <div
+//         className="flex gap-6 w-max"
+//         style={{
+//           animation: `marquee${reverse ? "Rev" : ""} 30s linear infinite`,
+//         }}
+//       >
+//         {doubled.map((item, i) => (
+//           <div
+//             key={i}
+//             className={
+//               type === "image"
+//                 ? "flex-shrink-0 w-32 h-16 flex items-center justify-center px-5 "
+//                 : "flex-shrink-0 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 text-white/50 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all cursor-default text-sm font-medium tracking-wide"
+//             }
+//           >
+//             {type === "image" ? (
+//               <img
+//                 src={item}
+//                 alt="Software logo"
+//                 className="max-w-full max-h-full object-contain"
+//               />
+//             ) : (
+//               item
+//             )}
+//           </div>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// }
+
+function MarqueeRow({
+  items,
+  reverse = false,
+  className = "",
+  type = "text"
+}: {
+  items: string[];
+  reverse?: boolean;
+  className?: string;
+  type?: "text" | "image";
+}) {
+  const [isPaused, setIsPaused] = useState(false);
+
   const doubled = [...items, ...items];
+
   return (
     <div className={`overflow-hidden py-3 ${className}`}>
       <div
         className="flex gap-6 w-max"
-        style={{ animation: `marquee${reverse ? "Rev" : ""} 30s linear infinite` }}
+        style={{
+          animation: `marquee${reverse ? "Rev" : ""} 30s linear infinite`,
+          animationPlayState: isPaused ? "paused" : "running",
+        }}
       >
         {doubled.map((item, i) => (
-          <div key={i} className="flex-shrink-0 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 text-white/50 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all cursor-default text-sm font-medium tracking-wide">
-            {item}
+          <div
+            key={i}
+            className={
+              type === "image"
+                ? "flex-shrink-0 w-32 h-16 flex items-center justify-center px-5 hover:scale-105 transition-transform duration-300"
+                : "flex-shrink-0 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 text-white/50 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all cursor-default text-sm font-medium tracking-wide"
+            }
+          >
+            {type === "image" ? (
+              <img
+                src={item}
+                alt="Software logo"
+                className="max-w-full max-h-full object-contain cursor-pointer"
+                onMouseEnter={() => setIsPaused(true)}
+                onMouseLeave={() => setIsPaused(false)}
+              />
+            ) : (
+              item
+            )}
           </div>
         ))}
       </div>
     </div>
   );
 }
+
+
+
+
 
 /* ── Dashboard Mockup ────────────────────────────────────── */
 function DashboardMockup() {
@@ -212,13 +290,29 @@ const DELIVERABLES = [
   // { icon: Users, label: "Labour Breakdown", desc: "Unit rate analysis" },
 ];
 
-const SOFTWARE = ["Bluebeam", "Planswift", "On-Screen Takeoff", "CostX", "Cubit", "Buildsoft", "Xactimate", "Stack"];
+// const SOFTWARE = ["Bluebeam", "Planswift", "On-Screen Takeoff", "CostX", "Cubit", "Buildsoft", "Xactimate", "Stack"];
+
+const SOFTWARE = [
+  "/software/1.png",
+  "/software/3.png",
+  "/software/4.png",
+  "/software/5.png",
+  "/software/6.png",
+  "/software/7.png",
+  "/software/1.png",
+  "/software/3.png",
+  "/software/4.png",
+  "/software/5.png",
+  "/software/6.png",
+  "/software/7.png",
+];
 
 const CLIENTS = [
   "BuildRight Pty Ltd", "Apex Constructions", "O'Connor Civil",
   "Metro Developments", "Prime Commercial", "Coastal Homes",
   "Pacific Infrastructure", "Urban Built Group",
 ];
+
 
 const TRUST_BADGES = [
   { icon: Shield, label: "Australian Standards" },
@@ -334,36 +428,6 @@ export default function Home() {
             {/* Right — Dashboard */}
             <DashboardMockup />
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            
           </div>
         </div>
       </section>
@@ -378,7 +442,7 @@ export default function Home() {
           @keyframes marqueeRev { from { transform: translateX(-50%) } to { transform: translateX(0) } }
         `}</style>
         <MarqueeRow items={CLIENTS} />
-        <MarqueeRow items={[...SOFTWARE, ...CLIENTS.slice(0, 4)]} reverse className="mt-2" />
+        <MarqueeRow items={[...CLIENTS]} reverse className="mt-2" />
       </section>
 
       {/* ── STATISTICS ──────────────────────────────── */}
@@ -535,8 +599,8 @@ export default function Home() {
         <div className="container mx-auto px-4 mb-10 text-center">
           <p className="text-white/30 text-sm font-semibold uppercase tracking-[0.2em]">Software We Use For Takeoffs</p>
         </div>
-        <MarqueeRow items={SOFTWARE} className="mb-0" />
-        <MarqueeRow items={[...SOFTWARE].reverse()} reverse />
+        <MarqueeRow type="image" items={SOFTWARE} className="mb-0" />
+        <MarqueeRow type="image" items={[...SOFTWARE].reverse()} reverse />
       </section>
 
       {/* ── INDUSTRIES ──────────────────────────────── */}

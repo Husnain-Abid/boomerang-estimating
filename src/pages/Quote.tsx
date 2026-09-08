@@ -1,37 +1,111 @@
-import { useState } from "react";
+"use client";
+
+import React, { useRef, useState } from "react";
+import emailjs from "@emailjs/browser";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { CheckCircle2, UploadCloud, ChevronRight, ArrowLeft } from "lucide-react";
+
+import {
+  ArrowRight,
+  ArrowLeft,
+  CheckCircle2,
+  Upload,
+  FileText,
+  X,
+  Loader2,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import { useToast } from "@/hooks/use-toast";
+
+
+// ─────────────────────────────────────────────
+// FORM SCHEMA
+// ─────────────────────────────────────────────
 
 const formSchema = z.object({
-  fullName: z.string().min(2, "Name must be at least 2 characters."),
-  email: z.string().email("Invalid email address."),
-  phone: z.string().min(8, "Phone number is required."),
-  companyName: z.string().optional(),
-  projectName: z.string().min(2, "Project name is required."),
-  projectAddress: z.string().min(5, "Project address is required."),
-  projectType: z.string().min(1, "Please select a project type."),
-  scope: z.string().min(10, "Please provide a brief scope description."),
+  fullName: z
+    .string()
+    .min(2, "Name must be at least 2 characters."),
+
+  email: z
+    .string()
+    .email("Invalid email address."),
+
+  phone: z
+    .string()
+    .min(8, "Phone number is required."),
+
+  companyName: z
+    .string()
+    .optional(),
+
+  projectName: z
+    .string()
+    .min(2, "Project name is required."),
+
+  projectAddress: z
+    .string()
+    .min(5, "Project address is required."),
+
+  projectType: z
+    .string()
+    .min(1, "Please select a project type."),
+
+  scope: z
+    .string()
+    .min(10, "Please provide a brief scope description."),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
+
+// ─────────────────────────────────────────────
+// COMPONENT
+// ─────────────────────────────────────────────
+
 export default function Quote() {
+  const { toast } = useToast();
+
+  const formRef = useRef<HTMLFormElement>(null);
+
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  const [selectedFile, setSelectedFile] =
+    useState<File | null>(null);
+
+
+  // ───────────────────────────────────────────
+  // REACT HOOK FORM
+  // ───────────────────────────────────────────
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
+
     defaultValues: {
       fullName: "",
       email: "",
@@ -44,244 +118,865 @@ export default function Quote() {
     },
   });
 
-  const nextStep = async () => {
-    let isValid = false;
-    if (step === 1) {
-      isValid = await form.trigger(["fullName", "email", "phone"]);
-    } else if (step === 2) {
-      isValid = await form.trigger(["projectName", "projectAddress", "projectType", "scope"]);
+
+  // ───────────────────────────────────────────
+  // FILE SELECT
+  // ───────────────────────────────────────────
+
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    // 50MB max
+    const maxSize = 50 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+      toast({
+        variant: "destructive",
+        title: "File too large",
+        description:
+          "Please select a file smaller than 50MB.",
+      });
+
+      event.target.value = "";
+      setSelectedFile(null);
+
+      return;
     }
-    if (isValid) setStep(step + 1);
+
+    setSelectedFile(file);
   };
 
-  const prevStep = () => setStep(step - 1);
+
+  // ───────────────────────────────────────────
+  // REMOVE FILE
+  // ───────────────────────────────────────────
+
+  const removeFile = () => {
+    setSelectedFile(null);
+
+    const fileInput =
+      document.getElementById(
+        "plans"
+      ) as HTMLInputElement | null;
+
+    if (fileInput) {
+      fileInput.value = "";
+    }
+  };
+
+
+  // ───────────────────────────────────────────
+  // STEP VALIDATION
+  // ───────────────────────────────────────────
+
+  const nextStep = async () => {
+    if (step === 1) {
+      const valid = await form.trigger([
+        "fullName",
+        "email",
+        "phone",
+        "companyName",
+      ]);
+
+      if (valid) {
+        setStep(2);
+      }
+
+      return;
+    }
+
+    if (step === 2) {
+      const valid = await form.trigger([
+        "projectName",
+        "projectAddress",
+        "projectType",
+        "scope",
+      ]);
+
+      if (valid) {
+        setStep(3);
+      }
+
+      return;
+    }
+  };
+
+
+  // ───────────────────────────────────────────
+  // PREVIOUS STEP
+  // ───────────────────────────────────────────
+
+  const previousStep = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    }
+  };
+
+
+  // ───────────────────────────────────────────
+  // EMAILJS SUBMIT
+  // ───────────────────────────────────────────
 
   const onSubmit = async (data: FormValues) => {
+    if (!formRef.current) return;
+
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Form submitted:", data);
-    // TODO: Integrate EmailJS or backend API here
-    setIsSubmitting(false);
-    setIsSuccess(true);
+
+    try {
+const EMAILJS_SERVICE_ID = "service_wg7bp55";
+const EMAILJS_TEMPLATE_ID = "template_q64htkv";
+const EMAILJS_PUBLIC_KEY = "HQrDPHxkWKjpqXRXw";
+
+
+      // Send complete HTML form to EmailJS
+      await emailjs.sendForm(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        formRef.current,
+        {
+          publicKey: EMAILJS_PUBLIC_KEY,
+        }
+      );
+
+
+      // Success
+      setIsSuccess(true);
+
+      form.reset();
+
+      setSelectedFile(null);
+
+      setStep(1);
+
+
+      toast({
+        title: "Quote Request Sent!",
+        description:
+          "Thank you. We'll be in touch within 2–4 business hours.",
+      });
+
+    } catch (error) {
+      console.error(
+        "EmailJS Quote Error:",
+        error
+      );
+
+      toast({
+        variant: "destructive",
+        title: "Something went wrong",
+        description:
+          "Unable to send your quote request. Please try again.",
+      });
+
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+
+  // ───────────────────────────────────────────
+  // SUCCESS SCREEN
+  // ───────────────────────────────────────────
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen pt-32 pb-24 bg-muted/30 flex items-center justify-center">
-        <Card className="max-w-md w-full mx-4 text-center border-primary/20 shadow-xl">
-          <CardHeader>
-            <div className="mx-auto w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
-              <CheckCircle2 size={32} />
-            </div>
-            <CardTitle className="text-2xl">Quote Request Sent!</CardTitle>
-            <CardDescription className="text-base mt-2">
-              Thank you for reaching out. Our estimating team has received your details and will get back to you within 2-4 business hours.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full" onClick={() => window.location.href = "/"}>
-              Return to Home
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <section className="min-h-[70vh] flex items-center justify-center px-6 py-20">
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 30,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          className="text-center max-w-xl"
+        >
+          <CheckCircle2
+            className="mx-auto mb-6 text-green-500"
+            size={70}
+          />
+
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            Quote Request Sent!
+          </h1>
+
+          <p className="text-muted-foreground text-lg mb-8">
+            Thank you for contacting Boomerang
+            Estimating. Our team will review your
+            project details and get back to you
+            within 2–4 business hours.
+          </p>
+
+          <Button
+            onClick={() => {
+              setIsSuccess(false);
+              setStep(1);
+            }}
+          >
+            Submit Another Request
+          </Button>
+        </motion.div>
+      </section>
     );
   }
 
+
+  // ─────────────────────────────────────────────
+  // MAIN FORM
+  // ─────────────────────────────────────────────
+
   return (
-    <div className="min-h-screen pt-32 pb-24 bg-muted/30">
-      <div className="container max-w-3xl mx-auto px-4">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Get a Free Quote</h1>
-          <p className="text-lg text-muted-foreground">Upload your plans and let us provide a competitive estimate.</p>
-        </div>
+    <section className="py-20 md:py-28 px-6">
 
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex justify-between text-sm font-medium text-muted-foreground mb-2 px-2">
-            <span className={step >= 1 ? "text-primary" : ""}>Personal Info</span>
-            <span className={step >= 2 ? "text-primary" : ""}>Project Details</span>
-            <span className={step >= 3 ? "text-primary" : ""}>Upload Plans</span>
-          </div>
-          <div className="h-2 w-full bg-secondary/10 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-primary transition-all duration-500 ease-in-out"
-              style={{ width: `${((step - 1) / 2) * 100}%` }}
-            />
-          </div>
-        </div>
+      <div className="max-w-4xl mx-auto">
 
-        <Card className="shadow-lg border-border/50">
-          <CardContent className="p-6 md:p-8">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                
-                {/* STEP 1: Personal Info */}
-                {step === 1 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                    <h2 className="text-2xl font-semibold mb-6">Personal Details</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="fullName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Full Name *</FormLabel>
-                            <FormControl><Input placeholder="John Doe" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email Address *</FormLabel>
-                            <FormControl><Input type="email" placeholder="john@example.com" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Phone Number *</FormLabel>
-                            <FormControl><Input placeholder="0400 000 000" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="companyName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Company Name (Optional)</FormLabel>
-                            <FormControl><Input placeholder="BuildRight Pty Ltd" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </motion.div>
-                )}
+        {/* HEADER */}
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 20,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          className="text-center mb-12"
+        >
+          <span className="inline-block text-sm font-semibold uppercase tracking-wider mb-4 text-primary">
+            Get a Quote
+          </span>
 
-                {/* STEP 2: Project Details */}
-                {step === 2 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                    <h2 className="text-2xl font-semibold mb-6">Project Details</h2>
-                    <div className="space-y-6">
-                      <FormField
-                        control={form.control}
-                        name="projectName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Project Name *</FormLabel>
-                            <FormControl><Input placeholder="Smith Residence" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="projectType"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Project Type *</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select a category" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="residential">Residential</SelectItem>
-                                <SelectItem value="commercial">Commercial</SelectItem>
-                                <SelectItem value="civil">Civil & Structural</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="projectAddress"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Project Address / Location *</FormLabel>
-                            <FormControl><Input placeholder="Sydney, NSW" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="scope"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Scope of Work *</FormLabel>
-                            <FormControl>
-                              <Textarea 
-                                placeholder="E.g., Require full BOQ for a 4-story commercial building..." 
-                                className="min-h-[100px]"
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </motion.div>
-                )}
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            Request Your
+            <span className="text-primary">
+              {" "}Estimate
+            </span>
+          </h1>
 
-                {/* STEP 3: File Upload */}
-                {step === 3 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                    <h2 className="text-2xl font-semibold mb-6">Upload Plans</h2>
-                    <div className="border-2 border-dashed border-border rounded-xl p-10 text-center bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group">
-                      <div className="w-16 h-16 bg-background rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm group-hover:scale-110 transition-transform">
-                        <UploadCloud className="text-primary" size={28} />
-                      </div>
-                      <h3 className="text-lg font-medium mb-2">Click or drag files here to upload</h3>
-                      <p className="text-sm text-muted-foreground mb-4">Accepted files: PDF, DWG, ZIP, XLSX, JPG, PNG (Max 50MB)</p>
-                      <Button type="button" variant="secondary">Select Files</Button>
-                      {/* Note: Frontend only dummy upload */}
-                    </div>
-                  </motion.div>
-                )}
+          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+            Tell us about your project and our
+            estimating team will get back to you
+            with the information you need.
+          </p>
+        </motion.div>
 
-                {/* Navigation Buttons */}
-                <div className="flex justify-between pt-6 border-t border-border mt-8">
-                  {step > 1 ? (
-                    <Button type="button" variant="outline" onClick={prevStep}>
-                      <ArrowLeft className="mr-2" size={16} /> Back
-                    </Button>
-                  ) : (
-                    <div></div> // Spacer
-                  )}
 
-                  {step < 3 ? (
-                    <Button type="button" onClick={nextStep}>
-                      Next Step <ChevronRight className="ml-2" size={16} />
-                    </Button>
-                  ) : (
-                    <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-white min-w-[150px]">
-                      {isSubmitting ? "Submitting..." : "Submit Quote Request"}
-                    </Button>
-                  )}
+        {/* PROGRESS */}
+        <div className="mb-10">
+
+          <div className="flex items-center justify-between mb-3">
+
+            {[1, 2, 3].map((item) => (
+              <div
+                key={item}
+                className="flex items-center"
+              >
+                <div
+                  className={`
+                    w-10 h-10 rounded-full
+                    flex items-center justify-center
+                    font-semibold
+                    transition-all duration-300
+                    ${
+                      step >= item
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    }
+                  `}
+                >
+                  {item}
                 </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+
+                {item !== 3 && (
+                  <div
+                    className={`
+                      hidden sm:block
+                      h-1 w-20 md:w-32
+                      mx-2
+                      transition-all duration-300
+                      ${
+                        step > item
+                          ? "bg-primary"
+                          : "bg-muted"
+                      }
+                    `}
+                  />
+                )}
+              </div>
+            ))}
+
+          </div>
+
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>Personal Info</span>
+            <span>Project Details</span>
+            <span>Upload Plans</span>
+          </div>
+
+        </div>
+
+
+        {/* FORM */}
+        <Form {...form}>
+
+          <form
+            ref={formRef}
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-8"
+          >
+
+            {/* ─────────────────────────────── */}
+            {/* STEP 1 */}
+            {/* ─────────────────────────────── */}
+
+            <div
+              className={
+                step === 1
+                  ? "block"
+                  : "hidden"
+              }
+            >
+
+              <div className="rounded-2xl border bg-card p-6 md:p-8 shadow-sm">
+
+                <div className="mb-8">
+
+                  <h2 className="text-2xl font-bold mb-2">
+                    Personal Information
+                  </h2>
+
+                  <p className="text-muted-foreground">
+                    Tell us how we can contact you.
+                  </p>
+
+                </div>
+
+
+                <div className="grid md:grid-cols-2 gap-6">
+
+                  {/* FULL NAME */}
+                  <FormField
+                    control={form.control}
+                    name="fullName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Full Name *
+                        </FormLabel>
+
+                        <FormControl>
+                          <Input
+                            placeholder="John Doe"
+                            {...field}
+                          />
+                        </FormControl>
+
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+
+                  {/* EMAIL */}
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Email Address *
+                        </FormLabel>
+
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="john@example.com"
+                            {...field}
+                          />
+                        </FormControl>
+
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+
+                  {/* PHONE */}
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Phone Number *
+                        </FormLabel>
+
+                        <FormControl>
+                          <Input
+                            type="tel"
+                            placeholder="+1 (555) 123-4567"
+                            {...field}
+                          />
+                        </FormControl>
+
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+
+                  {/* COMPANY */}
+                  <FormField
+                    control={form.control}
+                    name="companyName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Company Name
+                        </FormLabel>
+
+                        <FormControl>
+                          <Input
+                            placeholder="Your Company"
+                            {...field}
+                          />
+                        </FormControl>
+
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                </div>
+
+              </div>
+
+
+              {/* NEXT */}
+              <div className="flex justify-end mt-6">
+
+                <Button
+                  type="button"
+                  onClick={nextStep}
+                  className="gap-2"
+                >
+                  Next Step
+                  <ArrowRight size={18} />
+                </Button>
+
+              </div>
+
+            </div>
+
+
+            {/* ─────────────────────────────── */}
+            {/* STEP 2 */}
+            {/* ─────────────────────────────── */}
+
+            <div
+              className={
+                step === 2
+                  ? "block"
+                  : "hidden"
+              }
+            >
+
+              <div className="rounded-2xl border bg-card p-6 md:p-8 shadow-sm">
+
+                <div className="mb-8">
+
+                  <h2 className="text-2xl font-bold mb-2">
+                    Project Details
+                  </h2>
+
+                  <p className="text-muted-foreground">
+                    Give us some information about
+                    your project.
+                  </p>
+
+                </div>
+
+
+                <div className="space-y-6">
+
+                  {/* PROJECT NAME */}
+                  <FormField
+                    control={form.control}
+                    name="projectName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Project Name *
+                        </FormLabel>
+
+                        <FormControl>
+                          <Input
+                            placeholder="Commercial Building Project"
+                            {...field}
+                          />
+                        </FormControl>
+
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+
+                  <div className="grid md:grid-cols-2 gap-6">
+
+                    {/* PROJECT TYPE */}
+                    <FormField
+                      control={form.control}
+                      name="projectType"
+                      render={({ field }) => (
+                        <FormItem>
+
+                          <FormLabel>
+                            Project Type *
+                          </FormLabel>
+
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+
+                            <FormControl>
+
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select project type" />
+                              </SelectTrigger>
+
+                            </FormControl>
+
+                            <SelectContent>
+
+                              <SelectItem value="Residential">
+                                Residential
+                              </SelectItem>
+
+                              <SelectItem value="Commercial">
+                                Commercial
+                              </SelectItem>
+
+                              <SelectItem value="Industrial">
+                                Industrial
+                              </SelectItem>
+
+                              <SelectItem value="Renovation">
+                                Renovation
+                              </SelectItem>
+
+                              <SelectItem value="Other">
+                                Other
+                              </SelectItem>
+
+                            </SelectContent>
+
+                          </Select>
+
+
+                          {/* IMPORTANT FOR EMAILJS */}
+                          <input
+                            type="hidden"
+                            name="projectType"
+                            value={field.value || ""}
+                          />
+
+                          <FormMessage />
+
+                        </FormItem>
+                      )}
+                    />
+
+
+                    {/* PROJECT ADDRESS */}
+                    <FormField
+                      control={form.control}
+                      name="projectAddress"
+                      render={({ field }) => (
+                        <FormItem>
+
+                          <FormLabel>
+                            Project Address *
+                          </FormLabel>
+
+                          <FormControl>
+                            <Input
+                              placeholder="Project location"
+                              {...field}
+                            />
+                          </FormControl>
+
+                          <FormMessage />
+
+                        </FormItem>
+                      )}
+                    />
+
+                  </div>
+
+
+                  {/* SCOPE */}
+                  <FormField
+                    control={form.control}
+                    name="scope"
+                    render={({ field }) => (
+                      <FormItem>
+
+                        <FormLabel>
+                          Project Scope *
+                        </FormLabel>
+
+                        <FormControl>
+                          <Textarea
+                            placeholder="Briefly describe your project and the estimating services you need..."
+                            rows={7}
+                            {...field}
+                          />
+                        </FormControl>
+
+                        <FormMessage />
+
+                      </FormItem>
+                    )}
+                  />
+
+                </div>
+
+              </div>
+
+
+              {/* BUTTONS */}
+              <div className="flex justify-between mt-6">
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={previousStep}
+                  className="gap-2"
+                >
+                  <ArrowLeft size={18} />
+                  Previous
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={nextStep}
+                  className="gap-2"
+                >
+                  Next Step
+                  <ArrowRight size={18} />
+                </Button>
+
+              </div>
+
+            </div>
+
+
+            {/* ─────────────────────────────── */}
+            {/* STEP 3 */}
+            {/* ─────────────────────────────── */}
+
+            <div
+              className={
+                step === 3
+                  ? "block"
+                  : "hidden"
+              }
+            >
+
+              <div className="rounded-2xl border bg-card p-6 md:p-8 shadow-sm">
+
+                <div className="mb-8">
+
+                  <h2 className="text-2xl font-bold mb-2">
+                    Upload Plans
+                  </h2>
+
+                  <p className="text-muted-foreground">
+                    Upload your project plans,
+                    drawings or other documents.
+                  </p>
+
+                </div>
+
+
+                {/* FILE UPLOAD */}
+                <div
+                  className="
+                    border-2 border-dashed
+                    rounded-2xl
+                    p-8 md:p-12
+                    text-center
+                    hover:border-primary
+                    transition-colors
+                  "
+                >
+
+                  <input
+                    id="plans"
+                    name="plans"
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,.dwg,.zip,.xlsx,.xls,.jpg,.jpeg,.png"
+                    onChange={handleFileChange}
+                  />
+
+
+                  {!selectedFile ? (
+                    <>
+
+                      <div className="flex justify-center mb-5">
+
+                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+
+                          <Upload
+                            size={30}
+                            className="text-primary"
+                          />
+
+                        </div>
+
+                      </div>
+
+
+                      <h3 className="text-lg font-semibold mb-2">
+                        Upload Project Files
+                      </h3>
+
+                      <p className="text-muted-foreground mb-6">
+                        PDF, DWG, ZIP, XLSX, JPG or PNG
+                      </p>
+
+                      <p className="text-sm text-muted-foreground mb-6">
+                        Maximum file size: 50MB
+                      </p>
+
+
+                      <label
+                        htmlFor="plans"
+                        className="
+                          inline-flex
+                          items-center
+                          justify-center
+                          rounded-md
+                          bg-primary
+                          text-primary-foreground
+                          px-5
+                          py-2.5
+                          text-sm
+                          font-medium
+                          cursor-pointer
+                          hover:bg-primary/90
+                          transition-colors
+                        "
+                      >
+                        Select File
+                      </label>
+
+                    </>
+                  ) : (
+
+                    <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-muted">
+
+                      <div className="flex items-center gap-3 min-w-0">
+
+                        <FileText
+                          className="text-primary shrink-0"
+                          size={28}
+                        />
+
+                        <div className="text-left min-w-0">
+
+                          <p className="font-medium truncate">
+                            {selectedFile.name}
+                          </p>
+
+                          <p className="text-sm text-muted-foreground">
+                            {(
+                              selectedFile.size /
+                              (1024 * 1024)
+                            ).toFixed(2)}{" "}
+                            MB
+                          </p>
+
+                        </div>
+
+                      </div>
+
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={removeFile}
+                      >
+                        <X size={18} />
+                      </Button>
+
+                    </div>
+
+                  )}
+
+                </div>
+
+              </div>
+
+
+              {/* BUTTONS */}
+              <div className="flex justify-between mt-6">
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={previousStep}
+                  className="gap-2"
+                >
+                  <ArrowLeft size={18} />
+                  Previous
+                </Button>
+
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="gap-2 min-w-[170px]"
+                >
+
+                  {isSubmitting ? (
+                    <>
+                      <Loader2
+                        size={18}
+                        className="animate-spin"
+                      />
+
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      Submit Quote
+
+                      <ArrowRight size={18} />
+                    </>
+                  )}
+
+                </Button>
+
+              </div>
+
+            </div>
+
+          </form>
+
+        </Form>
+
       </div>
-    </div>
+
+    </section>
   );
 }
