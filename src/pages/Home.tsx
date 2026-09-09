@@ -9,7 +9,6 @@ import {
   Star,
   ChevronLeft,
   ChevronRight,
-  FileSpreadsheet,
   PenTool,
   BarChart3,
   Shield,
@@ -22,10 +21,29 @@ import {
   GraduationCap,
   Quote,
   Phone,
+  Send,
+  Upload,
+  FileText,
+  X
 } from "lucide-react";
 
 
 import { Button } from "@/components/ui/button";
+
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import emailjs from "@emailjs/browser";
+
+
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
+import { useDropzone } from "react-dropzone";
+
+
 
 import { SERVICES, PORTFOLIO, TESTIMONIALS, COMPANY_INFO } from "@/lib/data";
 
@@ -135,7 +153,7 @@ function MarqueeRow({
             key={i}
             className={
               type === "image"
-                ? "flex-shrink-0 w-32 h-16 flex items-center justify-center px-5 hover:scale-105 transition-transform duration-300"
+                ? "flex-shrink-0 w-32 h-16 flex items-center justify-center px-5 hover:scale-110 transition-transform duration-300"
                 : "flex-shrink-0 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 text-white/50 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all cursor-default text-sm font-medium tracking-wide"
             }
           >
@@ -161,8 +179,125 @@ function MarqueeRow({
 
 
 
-/* ── Dashboard Mockup ────────────────────────────────────── */
-function DashboardMockup() {
+
+
+/* -------------------------------------------------------------------------- */
+/* Schema                                                                     */
+/* -------------------------------------------------------------------------- */
+
+const schema = z.object({
+  fullName: z
+    .string()
+    .min(2, "Full name is required"),
+
+  email: z
+    .string()
+    .email("Valid email is required"),
+
+  companyName: z
+    .string()
+    .min(2, "Company name is required"),
+
+  website: z
+    .string()
+    .min(1, "Company website is required")
+    .url("Enter a valid website"),
+
+  message: z
+    .string()
+    .min(10, "Please provide at least 10 characters"),
+
+  file: z
+    .instanceof(File, {
+      message: "Please upload a file",
+    })
+    .optional(),
+
+});
+
+type FormData = z.infer<typeof schema>;
+
+
+/* ── quickForm  ────────────────────────────────────── */
+function QuickForm() {
+
+  const EMAILJS_SERVICE_ID = "service_wg7bp55";
+  const EMAILJS_TEMPLATE_ID = "template_q64htkv";
+  const EMAILJS_PUBLIC_KEY = "HQrDPHxkWKjpqXRXw";
+
+
+
+  const { toast } = useToast();
+
+  const [isSending, setIsSending] = useState(false);
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema),
+
+    defaultValues: {
+      fullName: "",
+      email: "",
+      companyName: "",
+      website: "",
+      message: "",
+      file: undefined,
+    },
+  });
+
+  /* ------------------------------------------------------------------------ */
+  /* Submit Form                                                              */
+  /* ------------------------------------------------------------------------ */
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      setIsSending(true);
+
+      const templateParams = {
+        fullName: data.fullName,
+        email: data.email,
+        companyName: data.companyName,
+        website: data.website,
+        message: data.message,
+
+        // File information
+        fileName: data.file?.name || "No file uploaded",
+        fileSize: data.file
+          ? `${(data.file.size / 1024 / 1024).toFixed(2)} MB`
+          : "N/A",
+      };
+
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams,
+        EMAILJS_PUBLIC_KEY
+      );
+
+      console.log("Email sent successfully:", data);
+
+      toast({
+        title: "Message Sent!",
+        description:
+          "Thank you! Your message has been sent successfully.",
+      });
+
+      form.reset();
+    } catch (error) {
+      console.error("EmailJS Error:", error);
+
+      toast({
+        title: "Failed to Send",
+        description:
+          "Something went wrong while sending your message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+
+
   return (
     <motion.div
       className="relative w-full max-w-lg mx-auto"
@@ -170,105 +305,210 @@ function DashboardMockup() {
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.9, delay: 0.3, ease: easeOut }}
     >
-      {/* Floating glow */}
-      <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-75 translate-y-8" />
 
-      <motion.div
-        className="relative bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-sm shadow-2xl"
-        animate={{ y: [0, -8, 0] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-      >
-        {/* Header bar */}
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-red-400/60" />
-            <div className="w-3 h-3 rounded-full bg-yellow-400/60" />
-            <div className="w-3 h-3 rounded-full bg-green-400/60" />
-          </div>
-          <div className="text-xs text-white/40 font-mono">Boomerang Estimate v2.4</div>
-        </div>
 
-        {/* Header bar */}
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-red-400/60" />
-            <div className="w-3 h-3 rounded-full bg-yellow-400/60" />
-            <div className="w-3 h-3 rounded-full bg-green-400/60" />
-          </div>
-          <div className="text-xs text-white/40 font-mono">Boomerang Estimate v2.4</div>
-        </div>
+      <div className="bg-muted rounded-2xl p-8 md:p-10 border border-border">
 
-        {/* Project title */}
-        <div className="mb-5">
-          <div className="text-white/40 text-xs mb-1 uppercase tracking-widest">Active Project</div>
-          <div className="text-white font-bold text-lg">Metro Office Complex — Melbourne</div>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs bg-primary/20 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-medium">In Progress</span>
-            <span className="text-xs text-white/40">Commercial · BOQ</span>
-          </div>
-        </div>
+        <h2 className="text-xl font-semibold mb-2 tracking-tight text-center">
+          Project-Based or Monthly Estimating <br /> Support — The Choice Is Yours        </h2>
 
-        {/* Progress bars */}
-        <div className="space-y-3 mb-5">
-          {[
-            { label: "Structural Takeoff", pct: 92, color: "bg-primary" },
-            { label: "Material Quantities", pct: 78, color: "bg-accent" },
-            { label: "Labour Breakdown", pct: 65, color: "bg-blue-400" },
-          ].map((bar) => (
-            <div key={bar.label}>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-white/60">{bar.label}</span>
-                <span className="text-white/80 font-semibold">{bar.pct}%</span>
-              </div>
-              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                <motion.div
-                  className={`h-full rounded-full ${bar.color}`}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${bar.pct}%` }}
-                  transition={{ duration: 1.5, delay: 0.8, ease: easeOut }}
-                />
-              </div>
+        <p className="text-muted-foreground mb-8 text-sm">
+          Submit your project drawings and specifications, if available. Our team will carefully review the documents and provide a clear, tailored quote before commencing your estimate.
+        </p>
+
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-5"
+          >
+
+            {/* Full Name + Email */}
+
+            <div className="grid sm:grid-cols-2 gap-5">
+
+              <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">
+                      Full Name *
+                    </FormLabel>
+
+                    <FormControl>
+                      <Input
+                        placeholder="John Smith"
+                        className="rounded-xl h-10 bg-background"
+                        {...field}
+                      />
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">
+                      Email Address *
+                    </FormLabel>
+
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="john@example.com"
+                        className="rounded-xl h-10 bg-background"
+                        {...field}
+                      />
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
             </div>
-          ))}
-        </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { label: "Trade Items", value: "247" },
-            { label: "Total Cost", value: "AUD 2.4M" },
-            { label: "Delivery", value: "36hrs" },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-white/5 rounded-xl p-3 text-center border border-white/5">
-              <div className="text-white font-bold text-sm">{stat.value}</div>
-              <div className="text-white/40 text-xs mt-0.5">{stat.label}</div>
+            {/* Company Name + Website */}
+
+            <div className="grid sm:grid-cols-2 gap-5">
+
+              <FormField
+                control={form.control}
+                name="companyName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">
+                      Company Name
+                    </FormLabel>
+
+                    <FormControl>
+                      <Input
+                        placeholder="BuildRight Pty Ltd"
+                        className="rounded-xl h-10 bg-background"
+                        {...field}
+                      />
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="website"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">
+                      Company Website
+                    </FormLabel>
+
+                    <FormControl>
+                      <Input
+                        type="url"
+                        placeholder="https://example.com"
+                        className="rounded-xl h-10 bg-background"
+                        {...field}
+                      />
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
             </div>
-          ))}
-        </div>
 
-        {/* File icons */}
-        <div className="flex gap-2 mt-4">
-          {["BOQ.xlsx", "Estimate.pdf", "Plans.dwg"].map((f) => (
-            <div key={f} className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white/50">
-              <FileSpreadsheet size={11} className="text-primary" />
-              {f}
-            </div>
-          ))}
-        </div>
-      </motion.div>
 
-      {/* Floating badge */}
-      <motion.div
-        className="absolute -bottom-4 -left-6 bg-white rounded-xl shadow-2xl px-4 py-2.5 flex items-center gap-2 border border-border"
-        animate={{ y: [0, 6, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-      >
-        <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
-        <span className="text-xs font-semibold text-foreground">Delivered in 48h</span>
-      </motion.div>
+            {/* Project Description */}
+
+            <FormField
+              control={form.control}
+              name="message"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-semibold">
+                    Project Description *
+                  </FormLabel>
+
+                  <FormControl>
+                    <Textarea
+                      placeholder="Tell us about your project and requirements..."
+                      className="min-h-[120px] rounded-xl bg-background resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="file"
+              render={({ field: { onChange, value, ...field } }) => (
+                <FormItem>
+                  <FormLabel className="font-semibold">
+                    Upload File
+                  </FormLabel>
+
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept=".pdf,.dwg,.zip"
+                      onChange={(e) => onChange(e.target.files?.[0])}
+                      {...field}
+                      className="rounded-xl h-10 bg-background py-2 px-4"
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+
+
+            {/* Submit Button */}
+
+            <Button
+              type="submit"
+              size="lg"
+              disabled={isSending}
+              className="w-full rounded-full font-bold text-base py-6 shadow-lg shadow-primary/20"
+            >
+              {isSending ? (
+                <>
+                  <span className="mr-2 animate-spin">
+                    ⏳
+                  </span>
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send size={18} className="mr-2" />
+                  Send Message
+                </>
+              )}
+            </Button>
+
+          </form>
+        </Form>
+      </div>
+
     </motion.div>
+
   );
 }
+
+
+
 
 const INDUSTRIES = [
   { icon: HomeIcon, label: "Residential", desc: "Custom homes & developments" },
@@ -290,21 +530,20 @@ const DELIVERABLES = [
   // { icon: Users, label: "Labour Breakdown", desc: "Unit rate analysis" },
 ];
 
-// const SOFTWARE = ["Bluebeam", "Planswift", "On-Screen Takeoff", "CostX", "Cubit", "Buildsoft", "Xactimate", "Stack"];
 
 const SOFTWARE = [
   "/software/1.png",
+  "/software/2.png",
   "/software/3.png",
   "/software/4.png",
   "/software/5.png",
   "/software/6.png",
   "/software/7.png",
-  "/software/1.png",
-  "/software/3.png",
-  "/software/4.png",
-  "/software/5.png",
-  "/software/6.png",
-  "/software/7.png",
+  "/software/8.png",
+  "/software/9.png",
+  "/software/10.png",
+  "/software/11.png",
+  "/software/12.png",
 ];
 
 const CLIENTS = [
@@ -425,15 +664,15 @@ export default function Home() {
               </motion.div>
             </motion.div>
 
-            {/* Right — Dashboard */}
-            <DashboardMockup />
+            {/* Right — Quick Form */}
+            <QuickForm />
 
           </div>
         </div>
       </section>
 
       {/* ── TRUSTED BY ──────────────────────────────── */}
-      <section className="py-16 bg-secondary/90 border-y border-white/5">
+      {/* <section className="py-16 bg-secondary/90 border-y border-white/5">
         <div className="container mx-auto px-4 mb-8 text-center">
           <p className="text-white/30 text-sm font-semibold uppercase tracking-[0.2em]">Trusted By Leading Australian Builders & Contractors</p>
         </div>
@@ -443,7 +682,7 @@ export default function Home() {
         `}</style>
         <MarqueeRow items={CLIENTS} />
         <MarqueeRow items={[...CLIENTS]} reverse className="mt-2" />
-      </section>
+      </section> */}
 
       {/* ── STATISTICS ──────────────────────────────── */}
       <section className="py-24 bg-primary relative overflow-hidden">
@@ -486,7 +725,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.7 }}
             >
-              <div className="bg-secondary rounded-2xl p-10 relative overflow-hidden">
+              {/* <div className="bg-secondary rounded-2xl p-10 relative overflow-hidden">
                 <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'linear-gradient(45deg, #fff 25%, transparent 25%)', backgroundSize: '20px 20px' }} />
                 <div className="relative z-10">
                   <div className="w-20 h-20 rounded-2xl bg-primary/20 border-2 border-primary/40 flex items-center justify-center mb-6">
@@ -505,6 +744,17 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+ */}
+
+              <div className="relative rounded-2xl overflow-hidden">
+                <img
+                  src="/images/about.png"
+                  alt="Boomerang Estimating"
+                  className="w-full h-auto object-cover rounded-2xl"
+                />
+              </div>
+
+
               {/* Orange accent line */}
               <div className="absolute -left-3 top-8 bottom-8 w-1 bg-gradient-to-b from-primary via-amber-400 to-primary rounded-full" />
             </motion.div>
@@ -595,16 +845,22 @@ export default function Home() {
       </section>
 
       {/* ── SOFTWARE EXPERTISE ──────────────────────── */}
-      <section className="py-20 bg-secondary overflow-hidden">
+      <section className="py-20 bg-white overflow-hidden">
         <div className="container mx-auto px-4 mb-10 text-center">
-          <p className="text-white/30 text-sm font-semibold uppercase tracking-[0.2em]">Software We Use For Takeoffs</p>
+          <p className="text-black/30 text-sm font-semibold uppercase tracking-[0.2em]">Software We Use For Takeoffs</p>
         </div>
+
+  <style>{`
+          @keyframes marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+          @keyframes marqueeRev { from { transform: translateX(-50%) } to { transform: translateX(0) } }
+        `}</style>
+
         <MarqueeRow type="image" items={SOFTWARE} className="mb-0" />
         <MarqueeRow type="image" items={[...SOFTWARE].reverse()} reverse />
       </section>
 
       {/* ── INDUSTRIES ──────────────────────────────── */}
-      <section className="py-28 bg-background">
+      <section className="py-28 bg-muted">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div className="text-center mb-16" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger()}>
             <motion.span variants={fadeUp} className="text-primary font-bold text-sm uppercase tracking-[0.15em] block mb-3">Sectors</motion.span>
@@ -824,8 +1080,7 @@ export default function Home() {
             variants={stagger(0.08)}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true }}
-          >
+            viewport={{ once: true }}>
             {DELIVERABLES.map(({ icon: Icon, label, desc }) => (
               <motion.div key={label} variants={fadeUp} whileHover={{ y: -3 }}
                 className="bg-background rounded-xl p-5 md:p-6 border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 group text-center flex flex-col items-center justify-center min-h-[170px]" >
@@ -858,38 +1113,6 @@ export default function Home() {
         </div>
       </section>
 
-
-
-      {/* ── FAQ PREVIEW ─────────────────────────────── */}
-      {/* <section className="py-28 bg-background">
-        <div className="container mx-auto px-4 md:px-6 max-w-3xl">
-          <motion.div className="text-center mb-16" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger()}>
-            <motion.span variants={fadeUp} className="text-primary font-bold text-sm uppercase tracking-[0.15em] block mb-3">Common Questions</motion.span>
-            <motion.h2 variants={fadeUp} className="text-4xl md:text-5xl font-extrabold tracking-tight">Frequently Asked Questions</motion.h2>
-          </motion.div>
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger(0.07)}>
-            <Accordion type="single" collapsible className="space-y-3">
-              {FAQS.slice(0, 5).map((faq, i) => (
-                <motion.div key={i} variants={fadeUp}>
-                  <AccordionItem value={`item-${i}`} className="border border-border rounded-xl px-6 data-[state=open]:border-primary/40 transition-colors">
-                    <AccordionTrigger className="text-left font-semibold hover:text-primary hover:no-underline py-5 data-[state=open]:text-primary">
-                      {faq.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground leading-relaxed pb-5">
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                </motion.div>
-              ))}
-            </Accordion>
-            <div className="text-center mt-8">
-              <Button variant="outline" className="rounded-full font-bold" asChild>
-                <Link href="/faq">View All FAQs <ArrowRight size={15} className="ml-2" /></Link>
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section> */}
 
       {/* ── FINAL CTA ───────────────────────────────── */}
       <section className="py-28 bg-secondary relative overflow-hidden">

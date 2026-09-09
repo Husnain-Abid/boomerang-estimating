@@ -160,10 +160,9 @@ function FileDropzone({
             border-2 border-dashed rounded-xl bg-white
             p-8 text-center cursor-pointer
             transition-all duration-200
-            ${
-              isDragActive
-                ? "border-primary bg-primary/10"
-                : "border-border hover:border-primary/50 hover:bg-primary/5"
+            ${isDragActive
+              ? "border-primary bg-primary/10"
+              : "border-border hover:border-primary/50 hover:bg-primary/5"
             }
           `}
         >
