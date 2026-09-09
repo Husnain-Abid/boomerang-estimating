@@ -22,9 +22,7 @@ import {
   Quote,
   Phone,
   Send,
-  Upload,
-  FileText,
-  X
+
 } from "lucide-react";
 
 
@@ -41,8 +39,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { useDropzone } from "react-dropzone";
-
 
 
 import { SERVICES, PORTFOLIO, TESTIMONIALS, COMPANY_INFO } from "@/lib/data";
@@ -546,11 +542,11 @@ const SOFTWARE = [
   "/software/12.png",
 ];
 
-const CLIENTS = [
-  "BuildRight Pty Ltd", "Apex Constructions", "O'Connor Civil",
-  "Metro Developments", "Prime Commercial", "Coastal Homes",
-  "Pacific Infrastructure", "Urban Built Group",
-];
+// const CLIENTS = [
+//   "BuildRight Pty Ltd", "Apex Constructions", "O'Connor Civil",
+//   "Metro Developments", "Prime Commercial", "Coastal Homes",
+//   "Pacific Infrastructure", "Urban Built Group",
+// ];
 
 
 const TRUST_BADGES = [
