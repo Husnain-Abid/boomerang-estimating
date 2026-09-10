@@ -816,19 +816,8 @@ export default function Home() {
                     <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary transition-colors duration-300">
                       <Icon size={32} className="text-primary group-hover:text-white transition-colors duration-300" />
                     </div>
-                    <div className="flex gap-2 mb-4">
-                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">{svc.turnaround}</span>
-                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-muted text-muted-foreground border border-border">{svc.price}</span>
-                    </div>
+                 
                     <h3 className="text-2xl font-extrabold mb-3">{svc.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed mb-6 flex-grow">{svc.shortDescription}</p>
-                    <ul className="space-y-2 mb-8">
-                      {svc.deliverables.map((d) => (
-                        <li key={d} className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <CheckCircle2 size={15} className="text-primary flex-shrink-0" />{d}
-                        </li>
-                      ))}
-                    </ul>
                     <Button variant="outline" className="w-full font-bold group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-colors" asChild>
                       <Link href={`/services/${svc.slug}`}>View Service Details <ArrowRight size={15} className="ml-2" /></Link>
                     </Button>
@@ -846,7 +835,7 @@ export default function Home() {
           <p className="text-black/30 text-sm font-semibold uppercase tracking-[0.2em]">Software We Use For Takeoffs</p>
         </div>
 
-  <style>{`
+        <style>{`
           @keyframes marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
           @keyframes marqueeRev { from { transform: translateX(-50%) } to { transform: translateX(0) } }
         `}</style>
