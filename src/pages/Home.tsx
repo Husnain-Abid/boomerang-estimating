@@ -181,6 +181,37 @@ function MarqueeRow({
 /* Schema                                                                     */
 /* -------------------------------------------------------------------------- */
 
+// const schema = z.object({
+//   fullName: z
+//     .string()
+//     .min(2, "Full name is required"),
+
+//   email: z
+//     .string()
+//     .email("Valid email is required"),
+
+//   companyName: z
+//     .string()
+//     .min(2, "Company name is required"),
+
+//   website: z
+//     .string()
+//     .min(1, "Company website is required")
+//     .url("Enter a valid website"),
+
+//   message: z
+//     .string()
+//     .min(10, "Please provide at least 10 characters"),
+
+//   file: z
+//     .instanceof(File, {
+//       message: "Please upload a file",
+//     })
+//     .optional(),
+
+// });
+
+
 const schema = z.object({
   fullName: z
     .string()
@@ -192,12 +223,15 @@ const schema = z.object({
 
   companyName: z
     .string()
-    .min(2, "Company name is required"),
+    .optional(),
 
   website: z
     .string()
-    .min(1, "Company website is required")
-    .url("Enter a valid website"),
+    .optional()
+    .refine(
+      (value) => !value || /^https?:\/\/.+\..+/.test(value),
+      "Enter a valid website"
+    ),
 
   message: z
     .string()
@@ -208,8 +242,9 @@ const schema = z.object({
       message: "Please upload a file",
     })
     .optional(),
-
 });
+
+
 
 type FormData = z.infer<typeof schema>;
 
