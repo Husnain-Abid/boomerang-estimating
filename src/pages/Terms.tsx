@@ -71,7 +71,7 @@ export default function Terms() {
             </div>
             <div>
               <h2 className="text-2xl font-extrabold text-foreground mb-4 tracking-tight">10. Contact</h2>
-              <p>For questions about these Terms, contact us at <a href="mailto:info@boomerangestimating.com.au" className="text-primary font-semibold hover:underline">info@boomerangestimating.com.au</a>.</p>
+              <p>For questions about these Terms, contact us at <a href="mailto:info@boomerangestimating.com" className="text-primary font-semibold hover:underline">info@boomerangestimating.com</a>.</p>
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row gap-4">

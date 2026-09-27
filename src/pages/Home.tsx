@@ -489,7 +489,7 @@ function QuickForm() {
               ) : (
                 <>
                   <Send size={18} className="mr-2" />
-                  Send Message
+                  Get Free Quote 
                 </>
               )}
             </Button>
@@ -641,14 +641,14 @@ export default function Home() {
 
 
 
-              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 mb-12">
+              {/* <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 mb-12">
                 <Button size="lg" className="text-base px-8 py-6 rounded-full font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow" asChild>
                   <Link href="/request-quote">Get Free Quote <ArrowRight size={18} className="ml-2" /></Link>
                 </Button>
                 <Button size="lg" variant="outline" className="text-base px-8 py-6 rounded-full font-bold bg-transparent border-white/20 text-white hover:bg-white/10" asChild>
                   <Link href="/contact">Book Discovery Call</Link>
                 </Button>
-              </motion.div>
+              </motion.div> */}
 
               <motion.div variants={fadeUp} className="flex flex-wrap gap-4">
                 {TRUST_BADGES.map(({ icon: Icon, label }) => (
