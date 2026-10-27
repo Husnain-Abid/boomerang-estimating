@@ -32,7 +32,6 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import emailjs from "@emailjs/browser";
 
 
 import { Input } from "@/components/ui/input";
@@ -217,11 +216,6 @@ type FormData = z.infer<typeof schema>;
 /* ── quickForm  ────────────────────────────────────── */
 function QuickForm() {
 
-  const EMAILJS_SERVICE_ID = "service_wg7bp55";
-  const EMAILJS_TEMPLATE_ID = "template_q64htkv";
-  const EMAILJS_PUBLIC_KEY = "HQrDPHxkWKjpqXRXw";
-
-
 
   const { toast } = useToast();
 
@@ -248,28 +242,48 @@ function QuickForm() {
     try {
       setIsSending(true);
 
-      const templateParams = {
-        fullName: data.fullName,
-        email: data.email,
-        companyName: data.companyName,
-        website: data.website,
-        message: data.message,
+      // Keep uploads small enough for a Vercel serverless request.
+      const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3 MB
+      let attachment: { fileName: string; contentBase64: string; contentType: string } | undefined;
 
-        // File information
-        fileName: data.file?.name || "No file uploaded",
-        fileSize: data.file
-          ? `${(data.file.size / 1024 / 1024).toFixed(2)} MB`
-          : "N/A",
-      };
+      if (data.file) {
+        if (data.file.size > MAX_FILE_SIZE) {
+          throw new Error("Please upload a file smaller than 3 MB.");
+        }
 
-      await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        templateParams,
-        EMAILJS_PUBLIC_KEY
-      );
+        const bytes = new Uint8Array(await data.file.arrayBuffer());
+        let binary = "";
+        for (let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
 
-      console.log("Email sent successfully:", data);
+        attachment = {
+          fileName: data.file.name,
+          contentBase64: btoa(binary),
+          contentType: data.file.type || "application/octet-stream",
+        };
+      }
+
+      const response = await fetch("/api/send-quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: data.fullName,
+          email: data.email,
+          companyName: data.companyName,
+          website: data.website,
+          message: data.message,
+          attachment,
+        }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to send your message.");
+      }
+
+      console.log("Quote request sent successfully.");
 
       toast({
         title: "Message Sent!",
@@ -279,12 +293,14 @@ function QuickForm() {
 
       form.reset();
     } catch (error) {
-      console.error("EmailJS Error:", error);
+      console.error("Quote form error:", error);
 
       toast({
         title: "Failed to Send",
         description:
-          "Something went wrong while sending your message. Please try again.",
+          error instanceof Error
+            ? error.message
+            : "Something went wrong while sending your message. Please try again.",
         variant: "destructive",
       });
     } finally {
