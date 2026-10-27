@@ -70,7 +70,7 @@ export default function Privacy() {
             </div>
             <div>
               <h2 className="text-2xl font-extrabold text-foreground mb-4 tracking-tight">8. Contact Us</h2>
-              <p>For privacy-related enquiries, please contact us at <a href="mailto:info@boomerangestimating.com.au" className="text-primary font-semibold hover:underline">info@boomerangestimating.com.au</a>. We will respond within 30 days.</p>
+              <p>For privacy-related enquiries, please contact us at <a href="mailto:info@boomerangestimating.com" className="text-primary font-semibold hover:underline">info@boomerangestimating.com</a>. We will respond within 30 days.</p>
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row gap-4">
