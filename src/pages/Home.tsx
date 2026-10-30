@@ -77,48 +77,6 @@ function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
   return <span ref={ref}>{count}{suffix}</span>;
 }
 
-/* ── Marquee Row ─────────────────────────────────────────── */
-// function MarqueeRow({ items,  reverse = false,  className = "",  type = "text"}: {
-//   items: string[];
-//   reverse?: boolean;
-//   className?: string;
-//   type?: "text" | "image";
-// }) {
-//   const doubled = [...items, ...items];
-
-//   return (
-//     <div className={`overflow-hidden py-3 ${className}`}>
-//       <div
-//         className="flex gap-6 w-max"
-//         style={{
-//           animation: `marquee${reverse ? "Rev" : ""} 30s linear infinite`,
-//         }}
-//       >
-//         {doubled.map((item, i) => (
-//           <div
-//             key={i}
-//             className={
-//               type === "image"
-//                 ? "flex-shrink-0 w-32 h-16 flex items-center justify-center px-5 "
-//                 : "flex-shrink-0 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 text-white/50 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all cursor-default text-sm font-medium tracking-wide"
-//             }
-//           >
-//             {type === "image" ? (
-//               <img
-//                 src={item}
-//                 alt="Software logo"
-//                 className="max-w-full max-h-full object-contain"
-//               />
-//             ) : (
-//               item
-//             )}
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
-
 function MarqueeRow({
   items,
   reverse = false,
@@ -169,46 +127,6 @@ function MarqueeRow({
     </div>
   );
 }
-
-
-
-
-
-
-
-/* -------------------------------------------------------------------------- */
-/* Schema                                                                     */
-/* -------------------------------------------------------------------------- */
-
-// const schema = z.object({
-//   fullName: z
-//     .string()
-//     .min(2, "Full name is required"),
-
-//   email: z
-//     .string()
-//     .email("Valid email is required"),
-
-//   companyName: z
-//     .string()
-//     .min(2, "Company name is required"),
-
-//   website: z
-//     .string()
-//     .min(1, "Company website is required")
-//     .url("Enter a valid website"),
-
-//   message: z
-//     .string()
-//     .min(10, "Please provide at least 10 characters"),
-
-//   file: z
-//     .instanceof(File, {
-//       message: "Please upload a file",
-//     })
-//     .optional(),
-
-// });
 
 
 const schema = z.object({
@@ -302,14 +220,17 @@ function QuickForm() {
       const response = await fetch("/api/send-quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+       
         body: JSON.stringify({
           fullName: data.fullName,
           email: data.email,
           companyName: data.companyName,
           website: data.website,
           message: data.message,
+          honeypot: "",
           attachment,
         }),
+
       });
 
       const result = await response.json().catch(() => ({}));
@@ -540,7 +461,7 @@ function QuickForm() {
               ) : (
                 <>
                   <Send size={18} className="mr-2" />
-                  Get Free Quote 
+                  Get Free Quote
                 </>
               )}
             </Button>
@@ -592,12 +513,6 @@ const SOFTWARE = [
   "/software/11.png",
   "/software/12.png",
 ];
-
-// const CLIENTS = [
-//   "BuildRight Pty Ltd", "Apex Constructions", "O'Connor Civil",
-//   "Metro Developments", "Prime Commercial", "Coastal Homes",
-//   "Pacific Infrastructure", "Urban Built Group",
-// ];
 
 
 const TRUST_BADGES = [
@@ -692,14 +607,6 @@ export default function Home() {
 
 
 
-              {/* <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 mb-12">
-                <Button size="lg" className="text-base px-8 py-6 rounded-full font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-shadow" asChild>
-                  <Link href="/request-quote">Get Free Quote <ArrowRight size={18} className="ml-2" /></Link>
-                </Button>
-                <Button size="lg" variant="outline" className="text-base px-8 py-6 rounded-full font-bold bg-transparent border-white/20 text-white hover:bg-white/10" asChild>
-                  <Link href="/contact">Book Discovery Call</Link>
-                </Button>
-              </motion.div> */}
 
               <motion.div variants={fadeUp} className="flex flex-wrap gap-4">
                 {TRUST_BADGES.map(({ icon: Icon, label }) => (
@@ -718,18 +625,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── TRUSTED BY ──────────────────────────────── */}
-      {/* <section className="py-16 bg-secondary/90 border-y border-white/5">
-        <div className="container mx-auto px-4 mb-8 text-center">
-          <p className="text-white/30 text-sm font-semibold uppercase tracking-[0.2em]">Trusted By Leading Australian Builders & Contractors</p>
-        </div>
-        <style>{`
-          @keyframes marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
-          @keyframes marqueeRev { from { transform: translateX(-50%) } to { transform: translateX(0) } }
-        `}</style>
-        <MarqueeRow items={CLIENTS} />
-        <MarqueeRow items={[...CLIENTS]} reverse className="mt-2" />
-      </section> */}
 
       {/* ── STATISTICS ──────────────────────────────── */}
       <section className="py-24 bg-primary relative overflow-hidden">
@@ -867,7 +762,7 @@ export default function Home() {
                     <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary transition-colors duration-300">
                       <Icon size={32} className="text-primary group-hover:text-white transition-colors duration-300" />
                     </div>
-                 
+
                     <h3 className="text-2xl font-extrabold mb-3">{svc.title}</h3>
                     <Button variant="outline" className="w-full font-bold group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-colors" asChild>
                       <Link href={`/services/${svc.slug}`}>View Service Details <ArrowRight size={15} className="ml-2" /></Link>

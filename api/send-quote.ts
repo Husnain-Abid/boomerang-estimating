@@ -23,9 +23,7 @@ export default async function handler(
 ) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
-    return res.status(405).json({
-      error: "Method not allowed",
-    });
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   if (!sender || !process.env.RESEND_API_KEY) {
@@ -38,30 +36,17 @@ export default async function handler(
     const {
       fullName,
       email,
-      phone,
       companyName,
-      projectName,
-      projectAddress,
-      projectType,
-      scope,
-      message,
       website,
+      message,
       honeypot,
       attachment,
     } = req.body ?? {};
 
-    // Separate hidden honeypot field.
-    if (
-      typeof honeypot === "string" &&
-      honeypot.trim().length > 0
-    ) {
-      return res.status(200).json({
-        success: true,
-      });
+    // Honeypot: real users should leave this field empty.
+    if (typeof honeypot === "string" && honeypot.trim()) {
+      return res.status(200).json({ success: true });
     }
-
-    // Support both frontend field names.
-    const projectScope = scope ?? message;
 
     if (
       typeof fullName !== "string" ||
@@ -69,77 +54,88 @@ export default async function handler(
       fullName.length > 120 ||
       typeof email !== "string" ||
       email.length > 254 ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-      typeof projectScope !== "string" ||
-      !projectScope.trim() ||
-      projectScope.length > 10000
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ||
+      typeof message !== "string" ||
+      !message.trim() ||
+      message.length > 10000
     ) {
       return res.status(400).json({
-        error: "Please provide a valid name, email, and project scope.",
+        error: "Please provide a valid name, email, and project description.",
       });
     }
 
     const fields: Record<string, unknown> = {
-      "Full name": fullName,
+      "Full Name": fullName,
       Email: email,
-      Phone: phone,
-      Company: companyName,
-      Website: website,
-      "Project name": projectName,
-      "Project address": projectAddress,
-      "Project type": projectType,
-      "Scope of work": projectScope,
+      "Company Name": companyName,
+      "Company Website": website,
+      "Project Description": message,
     };
 
     const html = Object.entries(fields)
-      .map(([label, value]) => `
-        <p>
-          <strong>${escapeHtml(label)}:</strong><br>
-          ${value ? escapeHtml(value) : "Not provided"}
-        </p>
-      `)
+      .map(
+        ([label, value]) => `
+          <p>
+            <strong>${escapeHtml(label)}:</strong><br />
+            ${value ? escapeHtml(value) : "Not provided"}
+          </p>
+        `
+      )
       .join("");
 
-    // Optional PDF attachment.
-    const attachments = [];
+    const attachments: {
+      filename: string;
+      content: Buffer;
+    }[] = [];
 
     if (attachment) {
-      const { fileName, content, contentType } = attachment;
+      const { fileName, contentBase64, contentType } = attachment;
+
+      const allowedTypes: Record<string, string> = {
+        "application/pdf": ".pdf",
+        "image/jpeg": ".jpg",
+        "image/png": ".png",
+        "application/zip": ".zip",
+        "application/x-zip-compressed": ".zip",
+        "application/acad": ".dwg",
+        "application/octet-stream": "",
+      };
 
       if (
         typeof fileName !== "string" ||
-        typeof content !== "string" ||
-        !content ||
-        content.length > 4_000_000
+        typeof contentBase64 !== "string" ||
+        !contentBase64 ||
+        contentBase64.length > 4_000_000 ||
+        typeof contentType !== "string" ||
+        !allowedTypes[contentType]
       ) {
         return res.status(400).json({
-          error: "Invalid or oversized attachment.",
+          error: "Invalid or unsupported attachment.",
         });
       }
 
-      const allowedTypes = [
-        "application/pdf",
-        "image/jpeg",
-        "image/png",
-      ];
+      const base64 = contentBase64.replace(/^data:[^;]+;base64,/, "");
+
+      if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64)) {
+        return res.status(400).json({
+          error: "Invalid attachment data.",
+        });
+      }
+
+      const extension = fileName.toLowerCase().slice(fileName.lastIndexOf("."));
 
       if (
-        contentType &&
-        !allowedTypes.includes(contentType)
+        allowedTypes[contentType] &&
+        extension !== allowedTypes[contentType]
       ) {
         return res.status(400).json({
-          error: "Unsupported attachment type.",
+          error: "File extension does not match its content type.",
         });
       }
-
-      const base64 = content.replace(
-        /^data:[^;]+;base64,/,
-        ""
-      );
 
       attachments.push({
         filename: fileName,
-        content: base64,
+        content: Buffer.from(base64, "base64"),
       });
     }
 
@@ -149,7 +145,7 @@ export default async function handler(
       replyTo: email.trim(),
       subject: `New Quote Request — ${fullName.trim()}`,
       html,
-      ...(attachments.length > 0 ? { attachments } : {}),
+      ...(attachments.length ? { attachments } : {}),
     });
 
     if (error) {
@@ -160,7 +156,7 @@ export default async function handler(
       });
     }
 
-    console.log("Resend email sent successfully:", data?.id);
+    console.log("Quote email sent:", data?.id);
 
     return res.status(200).json({
       success: true,
