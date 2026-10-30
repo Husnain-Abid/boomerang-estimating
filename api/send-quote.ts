@@ -7,6 +7,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const recipient = "info@boomerangestimating.com";
 const sender = process.env.EMAIL_FROM;
 
+const MAX_ATTACHMENT_SIZE = 3 * 1024 * 1024;
+
 function escapeHtml(value: unknown): string {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -17,13 +19,19 @@ function escapeHtml(value: unknown): string {
     .replace(/\r?\n/g, "<br>");
 }
 
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({
+      error: "Method not allowed",
+    });
   }
 
   if (!sender || !process.env.RESEND_API_KEY) {
@@ -39,28 +47,31 @@ export default async function handler(
       companyName,
       website,
       message,
+      deadline,
       honeypot,
       attachment,
     } = req.body ?? {};
 
-    // Honeypot: real users should leave this field empty.
+    // Honeypot protection
     if (typeof honeypot === "string" && honeypot.trim()) {
       return res.status(200).json({ success: true });
     }
 
+    // Required field validation
     if (
       typeof fullName !== "string" ||
       !fullName.trim() ||
       fullName.length > 120 ||
       typeof email !== "string" ||
       email.length > 254 ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ||
+      !isValidEmail(email) ||
       typeof message !== "string" ||
       !message.trim() ||
       message.length > 10000
     ) {
       return res.status(400).json({
-        error: "Please provide a valid name, email, and project description.",
+        error:
+          "Please provide a valid name, email, and project description.",
       });
     }
 
@@ -69,6 +80,7 @@ export default async function handler(
       Email: email,
       "Company Name": companyName,
       "Company Website": website,
+      "Project Deadline": deadline,
       "Project Description": message,
     };
 
@@ -89,6 +101,17 @@ export default async function handler(
     }[] = [];
 
     if (attachment) {
+      if (
+        typeof attachment !== "object" ||
+        typeof attachment.fileName !== "string" ||
+        typeof attachment.contentBase64 !== "string" ||
+        typeof attachment.contentType !== "string"
+      ) {
+        return res.status(400).json({
+          error: "Invalid attachment.",
+        });
+      }
+
       const { fileName, contentBase64, contentType } = attachment;
 
       const allowedTypes: Record<string, string> = {
@@ -97,16 +120,13 @@ export default async function handler(
         "image/png": ".png",
         "application/zip": ".zip",
         "application/x-zip-compressed": ".zip",
-        "application/acad": ".dwg",
-        "application/octet-stream": "",
       };
 
       if (
-        typeof fileName !== "string" ||
-        typeof contentBase64 !== "string" ||
+        !fileName.trim() ||
+        fileName.length > 255 ||
         !contentBase64 ||
-        contentBase64.length > 4_000_000 ||
-        typeof contentType !== "string" ||
+        contentBase64.length > 4_200_000 ||
         !allowedTypes[contentType]
       ) {
         return res.status(400).json({
@@ -114,28 +134,52 @@ export default async function handler(
         });
       }
 
-      const base64 = contentBase64.replace(/^data:[^;]+;base64,/, "");
+      const safeFileName = fileName
+        .replace(/\\/g, "/")
+        .split("/")
+        .pop()!
+        .replace(/[^a-zA-Z0-9._-]/g, "_");
 
-      if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64)) {
+      const base64 = contentBase64.replace(
+        /^data:[^;]+;base64,/,
+        ""
+      );
+
+      // Validate Base64 format
+      if (
+        !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(
+          base64
+        )
+      ) {
         return res.status(400).json({
           error: "Invalid attachment data.",
         });
       }
 
-      const extension = fileName.toLowerCase().slice(fileName.lastIndexOf("."));
+      const extension = safeFileName
+        .toLowerCase()
+        .slice(safeFileName.lastIndexOf("."));
 
-      if (
-        allowedTypes[contentType] &&
-        extension !== allowedTypes[contentType]
-      ) {
+      if (extension !== allowedTypes[contentType]) {
         return res.status(400).json({
           error: "File extension does not match its content type.",
         });
       }
 
+      const fileBuffer = Buffer.from(base64, "base64");
+
+      if (
+        fileBuffer.length === 0 ||
+        fileBuffer.length > MAX_ATTACHMENT_SIZE
+      ) {
+        return res.status(400).json({
+          error: "Attachment must be smaller than 3 MB.",
+        });
+      }
+
       attachments.push({
-        filename: fileName,
-        content: Buffer.from(base64, "base64"),
+        filename: safeFileName,
+        content: fileBuffer,
       });
     }
 

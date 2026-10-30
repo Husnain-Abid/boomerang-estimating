@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import emailjs from "@emailjs/browser";
 import { easeOut, motion } from "framer-motion";
 import {
   MapPin,
@@ -35,15 +34,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useDropzone } from "react-dropzone";
 
 /* -------------------------------------------------------------------------- */
-/* EmailJS Configuration                                                      */
-/* -------------------------------------------------------------------------- */
-
-// IMPORTANT:
-// Replace these values with your actual EmailJS values.
-
-const EMAILJS_SERVICE_ID = "service_wg7bp55";
-const EMAILJS_TEMPLATE_ID = "template_q64htkv";
-const EMAILJS_PUBLIC_KEY = "HQrDPHxkWKjpqXRXw";
 
 /* -------------------------------------------------------------------------- */
 /* Animations                                                                 */
@@ -136,7 +126,7 @@ function FileDropzone({
   } = useDropzone({
     onDrop,
     multiple: false,
-    maxSize: 10 * 1024 * 1024,
+    maxSize: 3 * 1024 * 1024,
 
     accept: {
       "application/pdf": [".pdf"],
@@ -306,54 +296,88 @@ export default function Contact() {
   /* Submit Form                                                              */
   /* ------------------------------------------------------------------------ */
 
-  const onSubmit = async (data: FormData) => {
-    try {
-      setIsSending(true);
+const onSubmit = async (data: FormData) => {
+  try {
+    setIsSending(true);
 
-      const templateParams = {
+    const MAX_FILE_SIZE = 3 * 1024 * 1024;
+
+    let attachment:
+      | {
+          fileName: string;
+          contentBase64: string;
+          contentType: string;
+        }
+      | undefined;
+
+    if (data.file) {
+      if (data.file.size > MAX_FILE_SIZE) {
+        throw new Error("Please upload a file smaller than 3 MB.");
+      }
+
+      const bytes = new Uint8Array(await data.file.arrayBuffer());
+
+      let binary = "";
+
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+
+      attachment = {
+        fileName: data.file.name,
+        contentBase64: btoa(binary),
+        contentType: data.file.type,
+      };
+    }
+
+    const response = await fetch("/api/send-quote", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         fullName: data.fullName,
         email: data.email,
         companyName: data.companyName,
         website: data.website,
         deadline: data.deadline,
         message: data.message,
+        honeypot: "",
+        attachment,
+      }),
+    });
 
-        // File information
-        fileName: data.file?.name || "No file uploaded",
-        fileSize: data.file
-          ? `${(data.file.size / 1024 / 1024).toFixed(2)} MB`
-          : "N/A",
-      };
+    const result = await response.json().catch(() => ({}));
 
-      await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        templateParams,
-        EMAILJS_PUBLIC_KEY
+    if (!response.ok) {
+      throw new Error(
+        result.error || "Failed to send your message."
       );
-
-      console.log("Email sent successfully:", data);
-
-      toast({
-        title: "Message Sent!",
-        description:
-          "Thank you! Your message has been sent successfully.",
-      });
-
-      form.reset();
-    } catch (error) {
-      console.error("EmailJS Error:", error);
-
-      toast({
-        title: "Failed to Send",
-        description:
-          "Something went wrong while sending your message. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSending(false);
     }
-  };
+
+    toast({
+      title: "Message Sent!",
+      description:
+        "Thank you! Your message has been sent successfully.",
+    });
+
+    form.reset();
+  } catch (error) {
+    console.error("Contact form error:", error);
+
+    toast({
+      title: "Failed to Send",
+      description:
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again.",
+      variant: "destructive",
+    });
+  } finally {
+    setIsSending(false);
+  }
+};
+
 
   return (
     <div className="w-full pt-20 overflow-hidden">
