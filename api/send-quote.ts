@@ -7,7 +7,6 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const recipient = "info@boomerangestimating.com";
 const sender = process.env.EMAIL_FROM;
 
-// Escape user input before inserting it into HTML.
 function escapeHtml(value: unknown): string {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -15,7 +14,7 @@ function escapeHtml(value: unknown): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;")
-    .replace(/\n/g, "<br>");
+    .replace(/\r?\n/g, "<br>");
 }
 
 export default async function handler(
@@ -45,18 +44,25 @@ export default async function handler(
       projectAddress,
       projectType,
       scope,
+      message,
       website,
       honeypot,
+      attachment,
     } = req.body ?? {};
 
-    // Only the separate hidden honeypot field should trigger this.
-    if (typeof honeypot === "string" && honeypot.trim()) {
+    // Separate hidden honeypot field.
+    if (
+      typeof honeypot === "string" &&
+      honeypot.trim().length > 0
+    ) {
       return res.status(200).json({
         success: true,
       });
     }
 
-    // Validate required fields.
+    // Support both frontend field names.
+    const projectScope = scope ?? message;
+
     if (
       typeof fullName !== "string" ||
       !fullName.trim() ||
@@ -64,9 +70,9 @@ export default async function handler(
       typeof email !== "string" ||
       email.length > 254 ||
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-      typeof scope !== "string" ||
-      !scope.trim() ||
-      scope.length > 10000
+      typeof projectScope !== "string" ||
+      !projectScope.trim() ||
+      projectScope.length > 10000
     ) {
       return res.status(400).json({
         error: "Please provide a valid name, email, and project scope.",
@@ -82,19 +88,60 @@ export default async function handler(
       "Project name": projectName,
       "Project address": projectAddress,
       "Project type": projectType,
-      "Scope of work": scope,
+      "Scope of work": projectScope,
     };
 
     const html = Object.entries(fields)
-      .map(([label, value]) => {
-        return `
-          <p>
-            <strong>${escapeHtml(label)}:</strong><br>
-            ${value ? escapeHtml(value) : "Not provided"}
-          </p>
-        `;
-      })
+      .map(([label, value]) => `
+        <p>
+          <strong>${escapeHtml(label)}:</strong><br>
+          ${value ? escapeHtml(value) : "Not provided"}
+        </p>
+      `)
       .join("");
+
+    // Optional PDF attachment.
+    const attachments = [];
+
+    if (attachment) {
+      const { fileName, content, contentType } = attachment;
+
+      if (
+        typeof fileName !== "string" ||
+        typeof content !== "string" ||
+        !content ||
+        content.length > 4_000_000
+      ) {
+        return res.status(400).json({
+          error: "Invalid or oversized attachment.",
+        });
+      }
+
+      const allowedTypes = [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+      ];
+
+      if (
+        contentType &&
+        !allowedTypes.includes(contentType)
+      ) {
+        return res.status(400).json({
+          error: "Unsupported attachment type.",
+        });
+      }
+
+      const base64 = content.replace(
+        /^data:[^;]+;base64,/,
+        ""
+      );
+
+      attachments.push({
+        filename: fileName,
+        content: base64,
+      });
+    }
 
     const { data, error } = await resend.emails.send({
       from: sender,
@@ -102,6 +149,7 @@ export default async function handler(
       replyTo: email.trim(),
       subject: `New Quote Request — ${fullName.trim()}`,
       html,
+      ...(attachments.length > 0 ? { attachments } : {}),
     });
 
     if (error) {
