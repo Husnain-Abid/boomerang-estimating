@@ -7,11 +7,21 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const recipient = "info@boomerangestimating.com";
 const sender = process.env.EMAIL_FROM;
 
+// Escape user input before inserting it into HTML.
+function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;")
+    .replace(/\n/g, "<br>");
+}
+
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
-  // Only allow POST requests
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({
@@ -19,10 +29,7 @@ export default async function handler(
     });
   }
 
-  // Check environment variables
   if (!sender || !process.env.RESEND_API_KEY) {
-    console.error("Missing RESEND_API_KEY or EMAIL_FROM");
-
     return res.status(500).json({
       error: "Email service is not configured.",
     });
@@ -42,17 +49,14 @@ export default async function handler(
       honeypot,
     } = req.body ?? {};
 
-    // Separate honeypot field to detect bots
-    if (
-      typeof honeypot === "string" &&
-      honeypot.trim().length > 0
-    ) {
+    // Only the separate hidden honeypot field should trigger this.
+    if (typeof honeypot === "string" && honeypot.trim()) {
       return res.status(200).json({
         success: true,
       });
     }
 
-    // Validate required fields
+    // Validate required fields.
     if (
       typeof fullName !== "string" ||
       !fullName.trim() ||
@@ -69,8 +73,7 @@ export default async function handler(
       });
     }
 
-    // Prepare email fields
-    const fields = {
+    const fields: Record<string, unknown> = {
       "Full name": fullName,
       Email: email,
       Phone: phone,
@@ -82,39 +85,25 @@ export default async function handler(
       "Scope of work": scope,
     };
 
-    // Escape HTML to prevent unsafe content
-    const escapeHtml = (value: unknown) =>
-      String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;")
-        .replace(/\n/g, "<br />");
-
     const html = Object.entries(fields)
       .map(([label, value]) => {
-        const safeValue = escapeHtml(value);
-
         return `
           <p>
-            <strong>${label}:</strong><br />
-            ${safeValue || "Not provided"}
+            <strong>${escapeHtml(label)}:</strong><br>
+            ${value ? escapeHtml(value) : "Not provided"}
           </p>
         `;
       })
       .join("");
 
-    // Send email using Resend
     const { data, error } = await resend.emails.send({
       from: sender,
       to: [recipient],
-      replyTo: email,
+      replyTo: email.trim(),
       subject: `New Quote Request — ${fullName.trim()}`,
       html,
     });
 
-    // Handle Resend errors
     if (error) {
       console.error("Resend error:", error);
 
@@ -123,7 +112,7 @@ export default async function handler(
       });
     }
 
-    console.log("Quote email sent successfully:", data?.id);
+    console.log("Resend email sent successfully:", data?.id);
 
     return res.status(200).json({
       success: true,
