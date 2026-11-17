@@ -7,7 +7,18 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const recipient = "info@boomerangestimating.com";
 const sender = process.env.EMAIL_FROM;
 
-const MAX_ATTACHMENT_SIZE = 3 * 1024 * 1024;
+// Maximum combined attachment size: 3 MB
+const MAX_TOTAL_ATTACHMENT_SIZE = 3 * 1024 * 1024;
+
+const ALLOWED_TYPES: Record<string, string> = {
+  "application/pdf": ".pdf",
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "application/zip": ".zip",
+  "application/x-zip-compressed": ".zip",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+    ".xlsx",
+};
 
 function escapeHtml(value: unknown): string {
   return String(value ?? "")
@@ -21,6 +32,27 @@ function escapeHtml(value: unknown): string {
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
+function safeFileName(fileName: string): string {
+  return fileName
+    .replace(/\\/g, "/")
+    .split("/")
+    .pop()!
+    .replace(/[^a-zA-Z0-9._-]/g, "_");
+}
+
+function createHtml(fields: Record<string, unknown>): string {
+  return Object.entries(fields)
+    .map(
+      ([label, value]) => `
+        <p>
+          <strong>${escapeHtml(label)}:</strong><br />
+          ${value ? escapeHtml(value) : "Not provided"}
+        </p>
+      `
+    )
+    .join("");
 }
 
 export default async function handler(
@@ -42,14 +74,21 @@ export default async function handler(
 
   try {
     const {
+      formType,
       fullName,
       email,
       companyName,
       website,
       message,
       deadline,
+      phone,
+      projectName,
+      projectAddress,
+      projectType,
+      scopeDescription,
       honeypot,
       attachment,
+      attachments: uploadedAttachments,
     } = req.body ?? {};
 
     // Honeypot protection
@@ -57,95 +96,147 @@ export default async function handler(
       return res.status(200).json({ success: true });
     }
 
-    // Required field validation
+    // Common validation
     if (
       typeof fullName !== "string" ||
       !fullName.trim() ||
       fullName.length > 120 ||
       typeof email !== "string" ||
       email.length > 254 ||
-      !isValidEmail(email) ||
-      typeof message !== "string" ||
-      !message.trim() ||
-      message.length > 10000
+      !isValidEmail(email)
     ) {
       return res.status(400).json({
-        error:
-          "Please provide a valid name, email, and project description.",
+        error: "Please provide a valid name and email address.",
       });
     }
 
-    const fields: Record<string, unknown> = {
-      "Full Name": fullName,
-      Email: email,
-      "Company Name": companyName,
-      "Company Website": website,
-      "Project Deadline": deadline,
-      "Project Description": message,
-    };
+    let fields: Record<string, unknown>;
+    let subject: string;
 
-    const html = Object.entries(fields)
-      .map(
-        ([label, value]) => `
-          <p>
-            <strong>${escapeHtml(label)}:</strong><br />
-            ${value ? escapeHtml(value) : "Not provided"}
-          </p>
-        `
-      )
-      .join("");
+    if (formType === "request-quote") {
+      // Request Quote form validation
+      if (
+        typeof phone !== "string" ||
+        phone.trim().length < 8 ||
+        phone.length > 40 ||
+        typeof projectName !== "string" ||
+        projectName.trim().length < 2 ||
+        typeof projectAddress !== "string" ||
+        projectAddress.trim().length < 5 ||
+        typeof projectType !== "string" ||
+        !projectType.trim() ||
+        typeof scopeDescription !== "string" ||
+        scopeDescription.trim().length < 20 ||
+        scopeDescription.length > 10000
+      ) {
+        return res.status(400).json({
+          error: "Please complete all required project details.",
+        });
+      }
 
-    const attachments: {
+      fields = {
+        "Form Type": "Request a Quote",
+        "Full Name": fullName,
+        Email: email,
+        Phone: phone,
+        "Company Name": companyName,
+        "Project Name": projectName,
+        "Project Address": projectAddress,
+        "Project Type": projectType,
+        "Scope Description": scopeDescription,
+      };
+
+      subject = `New Quote Request — ${fullName.trim()} — ${projectName.trim()}`;
+    } else {
+      // Existing Contact form validation
+      if (
+        typeof message !== "string" ||
+        !message.trim() ||
+        message.length > 10000
+      ) {
+        return res.status(400).json({
+          error: "Please provide a project description.",
+        });
+      }
+
+      fields = {
+        "Form Type": "Contact Form",
+        "Full Name": fullName,
+        Email: email,
+        "Company Name": companyName,
+        "Company Website": website,
+        "Project Deadline": deadline,
+        "Project Description": message,
+      };
+
+      subject = `New Quote Request — ${fullName.trim()}`;
+    }
+
+    // Support both the existing Contact attachment and
+    // multiple Request Quote attachments.
+    const files: unknown[] = [];
+
+    if (attachment) {
+      files.push(attachment);
+    }
+
+    if (uploadedAttachments !== undefined) {
+      if (!Array.isArray(uploadedAttachments)) {
+        return res.status(400).json({
+          error: "Invalid attachments.",
+        });
+      }
+
+      files.push(...uploadedAttachments);
+    }
+
+    const emailAttachments: {
       filename: string;
       content: Buffer;
     }[] = [];
 
-    if (attachment) {
+    let totalAttachmentSize = 0;
+
+    for (const file of files) {
       if (
-        typeof attachment !== "object" ||
-        typeof attachment.fileName !== "string" ||
-        typeof attachment.contentBase64 !== "string" ||
-        typeof attachment.contentType !== "string"
+        !file ||
+        typeof file !== "object" ||
+        typeof (file as any).fileName !== "string" ||
+        typeof (file as any).contentBase64 !== "string" ||
+        typeof (file as any).contentType !== "string"
       ) {
         return res.status(400).json({
           error: "Invalid attachment.",
         });
       }
 
-      const { fileName, contentBase64, contentType } = attachment;
-
-      const allowedTypes: Record<string, string> = {
-        "application/pdf": ".pdf",
-        "image/jpeg": ".jpg",
-        "image/png": ".png",
-        "application/zip": ".zip",
-        "application/x-zip-compressed": ".zip",
+      const { fileName, contentBase64, contentType } = file as {
+        fileName: string;
+        contentBase64: string;
+        contentType: string;
       };
 
+      const extension = ALLOWED_TYPES[contentType];
+
+      const cleanName = safeFileName(fileName);
+
       if (
-        !fileName.trim() ||
-        fileName.length > 255 ||
+        !cleanName ||
+        cleanName.length > 255 ||
         !contentBase64 ||
-        contentBase64.length > 4_200_000 ||
-        !allowedTypes[contentType]
+        !extension ||
+        contentBase64.length > 4_300_000
       ) {
         return res.status(400).json({
           error: "Invalid or unsupported attachment.",
         });
       }
 
-      const safeFileName = fileName
-        .replace(/\\/g, "/")
-        .split("/")
-        .pop()!
-        .replace(/[^a-zA-Z0-9._-]/g, "_");
-
       const base64 = contentBase64.replace(
         /^data:[^;]+;base64,/,
         ""
       );
 
-      // Validate Base64 format
       if (
         !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(
           base64
@@ -156,11 +247,7 @@ export default async function handler(
         });
       }
 
-      const extension = safeFileName
-        .toLowerCase()
-        .slice(safeFileName.lastIndexOf("."));
-
-      if (extension !== allowedTypes[contentType]) {
+      if (!cleanName.toLowerCase().endsWith(extension)) {
         return res.status(400).json({
           error: "File extension does not match its content type.",
         });
@@ -168,28 +255,44 @@ export default async function handler(
 
       const fileBuffer = Buffer.from(base64, "base64");
 
-      if (
-        fileBuffer.length === 0 ||
-        fileBuffer.length > MAX_ATTACHMENT_SIZE
-      ) {
+      if (fileBuffer.length === 0) {
         return res.status(400).json({
-          error: "Attachment must be smaller than 3 MB.",
+          error: "An uploaded file is empty.",
         });
       }
 
-      attachments.push({
-        filename: safeFileName,
+      totalAttachmentSize += fileBuffer.length;
+
+      if (totalAttachmentSize > MAX_TOTAL_ATTACHMENT_SIZE) {
+        return res.status(400).json({
+          error: "The combined attachment size must be 3 MB or less.",
+        });
+      }
+
+      emailAttachments.push({
+        filename: cleanName,
         content: fileBuffer,
       });
     }
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2>New Website Form Submission</h2>
+        ${createHtml(fields)}
+        <hr />
+        <p><strong>Uploaded Files:</strong> ${emailAttachments.length}</p>
+      </div>
+    `;
 
     const { data, error } = await resend.emails.send({
       from: sender,
       to: [recipient],
       replyTo: email.trim(),
-      subject: `New Quote Request — ${fullName.trim()}`,
+      subject,
       html,
-      ...(attachments.length ? { attachments } : {}),
+      ...(emailAttachments.length
+        ? { attachments: emailAttachments }
+        : {}),
     });
 
     if (error) {
@@ -200,7 +303,7 @@ export default async function handler(
       });
     }
 
-    console.log("Quote email sent:", data?.id);
+    console.log("Email sent successfully:", data?.id);
 
     return res.status(200).json({
       success: true,
